@@ -3,9 +3,30 @@
 #include "assets.h"
 #define BUFFER_SIZE 1024
 
+void material_freealloc(material_t* m){
+    free(m->name);
+    free(m->diffuse_texture_name);
+}
+
+void objSubmodelData_freealloc(objSubmodelData_t* submodel){
+    free(submodel->material_name);
+    list_destroy(&submodel->faces);
+}
+
+//TODO
+void objModelData_freealloc(objModelData_t* model){
+    //list_foreach
+    list_destroy(&model->materials);
+    list_destroy(&model->position_data);
+    list_destroy(&model->uv_data);
+    list_destroy(&model->normal_data);
+    //list_foreach
+    list_destroy(&model->submodel_data);
+}
+
 list_t* load_mtl_file(const char* file_path) {
     list_t* materials = list_init(sizeof(material_t)); //liste des material à retourner
-    material_t* current_material; // material courant à stocker
+    material_t current_material; // material courant à stocker
     char buffer[BUFFER_SIZE]; //stocke la ligne courante
     char* end; //pointe vers la fin de la ligne
 
@@ -36,31 +57,34 @@ list_t* load_mtl_file(const char* file_path) {
         }
 
         if (strncmp(buffer, "newmtl ", 7) == 0) {
+            if(current_material.name != NULL){
+                list_add(materials, (void*)&current_material);
+            }
+
             //initialisation du material
-            current_material = malloc(sizeof(material_t));
-            current_material->name = strdup(buffer + 7); //copie le nom qui se trouve à coté
-            current_material->diffuse_texture_name = NULL;
-            current_material->diffuse[0] = 0.0f;
-            current_material->diffuse[1] = 0.0f;
-            current_material->diffuse[2] = 0.0f;
-            current_material->transparency = 1.0f;
+            current_material.name = strdup(buffer + 7); //copie le nom qui se trouve à coté
+            current_material.diffuse_texture_name = NULL;
+            current_material.diffuse[0] = 0.0f;
+            current_material.diffuse[1] = 0.0f;
+            current_material.diffuse[2] = 0.0f;
+            current_material.transparency = 1.0f;
         }
         //lire diffuse_texture_name
         else if (strncmp(buffer, "map_Kd ", 7) == 0) {
-            current_material->diffuse_texture_name = strdup(buffer + 7);
+            current_material.diffuse_texture_name = strdup(buffer + 7);
         }
         //lire diffuse
         else if (strncmp(buffer, "Kd ", 3) == 0) {
-            sscanf(buffer + 3, "%f %f %f", &current_material->diffuse[0], &current_material->diffuse[1], &current_material->diffuse[2]);
+            sscanf(buffer + 3, "%f %f %f", &current_material.diffuse[0], &current_material.diffuse[1], &current_material.diffuse[2]);
         }
         //lire transparency
         else if (strncmp(buffer, "d ", 2) == 0) {
-            sscanf(buffer + 2, "%f", &current_material->transparency);
+            sscanf(buffer + 2, "%f", &current_material.transparency);
         }
-
-        list_add(materials, (void*)current_material);
+        
     }
 
+    list_add(materials, (void*)&current_material);
 
     fclose(mtl_file);
 
@@ -120,7 +144,7 @@ objModelData_t* objModelData_load(const char* file_path){
     while (fgets(buffer, BUFFER_SIZE, obj_file)) {
 
         //place un marqueur de fin de chaine de caractère a la fin d'une ligne 
-        char *end = buffer + strlen(buffer) - 1;
+        char* end = buffer + strlen(buffer) - 1;
         while (end >= buffer && (*end == '\n' || *end == '\r')) {
             *end = '\0';
             end--;

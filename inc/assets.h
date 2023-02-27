@@ -19,12 +19,16 @@ typedef struct objSubmodelData_s {
     
 }objSubmodelData_t;
 
+void objSubmodelData_freealloc(objSubmodelData_t* data);
+
 typedef struct material_s {
     char* name;
     char* diffuse_texture_name;
     float diffuse[3];
     float transparency;
 }material_t;
+
+void material_freealloc(material_t* m);
 
 typedef struct objModelData_s {
     list_t* materials; //material_t
@@ -38,6 +42,7 @@ typedef struct objModelData_s {
 }objModelData_t;
 
 objModelData_t objModelData_load(const char* file_path);
+void objModelData_freealloc(objModelData_t* data);
 
 typedef struct WorldspawnEntry_s {
     char* obj_name;
