@@ -15,12 +15,13 @@ typedef struct list_elem_s {
 // La structure de données pour représenter la liste
 typedef struct list_s {
     size_t size;
+    size_t size_elem;
     list_elem_t* head;
     list_elem_t* tail;
 } list_t;
 
 // Initialise une nouvelle liste
-list_t* list_init();
+list_t* list_init(size_t sizeElem);
 
 // Ajoute un nouvel élément à la fin de la liste
 void list_add(list_t* l, void* data);
