@@ -3,6 +3,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <math.h>
 
 /// LISTE
 
@@ -37,14 +39,66 @@ void list_clear(list_t* l);
 
 /// FONCTIONS MATHS
 
-/*
-inline float random_float(float low, float high) {
-    return low + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (high - low)));
-}
 
-inline float lerp(float a, float b, float t) {
-    return a + (b - a) * t;
-}
-*/
+
+typedef struct vector3_s {
+    float x;
+    float y;
+    float z;
+}vector3_t;
+
+vector3_t vector3_init(float x, float y, float z);
+
+vector3_t vector3_add(vector3_t a, vector3_t b);
+vector3_t vector3_sub(vector3_t a, vector3_t b);
+vector3_t vector3_mult(vector3_t v, float f);
+
+vector3_t horizontal(vector3_t v,);
+
+float vector3_dot(vector3_t a, vector3_t b);
+vector3_t vector3_cross(vector3_t a, vector3_t b);
+float vector3_length(vector3_t v);
+vector3_t vector3_normalize(vector3_t v);
+float vector3_distance(vector3_t a, vector3_t b);
+vector3_t vector3_rotate_around(vector3_t v, vector3_t axis, float angle);
+vector3_t vector3_rotate(vector3_t v, vector3_t euler);
+
+vector3_t vector3_zero;
+vector3_t vector3_up;
+vector3_t vector3_down;
+vector3_t vector3_forward;
+vector3_t vector3_back;
+vector3_t vector3_left;
+vector3_t vector3_right;
+
+//void print_vector3(vector3_t v, char* out);
+
+typedef struct matrix4_s {
+    float data[16];
+
+    const matrix4_s identity;
+}matrix4_t;
+matrix4_t matrix4_mult(matrix4_t a, matrix4_t b);
+vector3_t matrix4_mult_vector3(vector3_t v);
+
+matrix4_t matrix4_rotation(vector3_t euler);
+matrix4_t matrix4_look_at(vector3_t eye, vector3_t center, vector3_t up);
+matrix4_t matrix4_perspective(float fov, float aspect_ratio, float near, float far);
+matrix4_t matrix4_ortho(float left, float right, float bottom, float top, float near, float far);
+
+/*
+typedef struct vector2_s {
+    const float x;
+    const float y;
+};
+
+vector2_t vector2_init(float x, float y,);
+vector2_t vector2_mult(vector2_t v, float f);
+
+struct Vector2i {
+    const int x;
+    const int y;
+};
+/*
 
 #endif

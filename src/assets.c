@@ -3,9 +3,9 @@
 #include <assets.h>
 #define BUFFER_SIZE 1024
 
-void material_freealloc(material_t* m){
-    free(m->name);
-    free(m->diffuse_texture_name);
+void material_freealloc(material_t* material){
+    free(material->name);
+    free(material->diffuse_texture_name);
 }
 
 void objSubmodelData_freealloc(objSubmodelData_t* submodel){
@@ -32,6 +32,7 @@ void objModelData_freealloc(objModelData_t* model){
 list_t* load_mtl_file(const char* file_path) {
     list_t* materials = list_init(sizeof(material_t)); //liste des material à retourner
     material_t current_material; // material courant à stocker
+
     char buffer[BUFFER_SIZE]; //stocke la ligne courante
     char* end; //pointe vers la fin de la ligne
 
@@ -39,18 +40,15 @@ list_t* load_mtl_file(const char* file_path) {
 
     if (mtl_file == NULL) {
         fprintf(stderr, "Impossible d'ouvrir le fichier mtl '%s'\n", mtl_file);
+        list_destroy(&materials);
         return materials;
     }
     
    
     while (fgets(buffer, BUFFER_SIZE, mtl_file)) {
 
-        if (strstr(buffer, "newmtl") != NULL) {
-            continue; // Start parsing from here
-        }
-
         //place un marqueur de fin de chaine de caractère a la fin d'une ligne 
-        char *end = buffer + strlen(buffer) - 1;
+        *end = buffer + strlen(buffer) - 1;
         while (end >= buffer && (*end == '\n' || *end == '\r')) {
             *end = '\0';
             end--;
@@ -118,6 +116,7 @@ objModelData_t* objModelData_load(const char* file_path){
 
     if (obj_file == NULL) {
         fprintf(stderr, "Impossible d'ouvrir le fichier obj '%s'\n", obj_file);
+        free(model);
         return model;
     }
 
@@ -149,7 +148,7 @@ objModelData_t* objModelData_load(const char* file_path){
     while (fgets(buffer, BUFFER_SIZE, obj_file)) {
 
         //place un marqueur de fin de chaine de caractère a la fin d'une ligne 
-        char* end = buffer + strlen(buffer) - 1;
+        end = buffer + strlen(buffer) - 1;
         while (end >= buffer && (*end == '\n' || *end == '\r')) {
             *end = '\0';
             end--;
@@ -182,7 +181,6 @@ objModelData_t* objModelData_load(const char* file_path){
             list_clear(current_submodel.faces);
         }
         else if (strncmp(buffer, "f ", 2) == 0) {
-            char dummy;
             sscanf(buffer + 2, "%zu/%zu/%zu %zu/%zu/%zu %zu/%zu/%zu",
                 &current_face_data.position_indices[0], &current_face_data.uv_indices[0], &current_face_data.normal_indices[0],
                 &current_face_data.position_indices[1], &current_face_data.uv_indices[1], &current_face_data.normal_indices[1],
@@ -205,5 +203,146 @@ objModelData_t* objModelData_load(const char* file_path){
     return model;
 }
 
+void objModelData_destroy(objModelData_t** model){
+    objModelData_freealloc(*model);
+    free(*model);
+    *model = NULL;
+}
 
-scene_t read_scene(const char* file_path);
+
+scene_t read_scene(const char* file_path){
+
+    scene_t scene = malloc(sizeof(scene_t));
+
+    char buffer[BUFFER_SIZE]; //stocke la ligne courante
+    char* end; //pointe vers la fin de la ligne
+
+    FILE* scene_file = fopen(file_path, "r");
+    
+    if (obj_file == NULL) {
+        fprintf(stderr, "Impossible d'ouvrir le fichier de scene '%s'\n", obj_file);
+        free(scene);
+        return model;
+    }
+
+    while (fgets(buffer, BUFFER_SIZE, scene_file)) {
+
+        //place un marqueur de fin de chaine de caractère a la fin d'une ligne 
+        end = buffer + strlen(buffer) - 1;
+        while (end >= buffer && (*end == '\n' || *end == '\r')) {
+            *end = '\0';
+            end--;
+        }
+
+        if (buffer[0] == '\0' || buffer[0] == '#') {
+            continue;
+        }
+
+        if (strncmp(buffer, "@player_start", 13) == 0) {
+            fgets(buffer, BUFFER_SIZE, scene_file);
+            sscanf(buffer, "%f %f", &current_uv_data[0], &current_uv_data[1]);
+            list_add(model->uv_data, (void*)current_uv_data);
+        }
+        else if (strncmp(buffer, "@player_lookat", 14) == 0) {
+            sscanf(buffer + 3, "%f %f %f", &current_normal_data[0], &current_normal_data[1], &current_normal_data[2]);
+            list_add(model->normal_data, (void*)current_normal_data);
+        }
+        else if (strncmp(buffer, "@worldspawn", 11) == 0) {
+            sscanf(buffer + 2, "%f %f %f", &current_position_data[0], &current_position_data[1], &current_position_data[2]);
+            list_add(model->position_data, (void*)current_position_data);
+        }
+        else if (strncmp(buffer, "usemtl ", 7) == 0) {
+            if (current_submodel.material_name != NULL) {
+                prev_face_data.material_name = strdup(current_submodel.material_name);
+                prev_face_data.faces = list_duplicate(current_submodel.faces);
+
+                list_add(model->submodel_data, (void*)&prev_face_data);
+            }
+            current_submodel.material_name = realloc(current_submodel.material_name, sizeof(char) * strlen(buffer + 7)+1);
+            strcpy(current_submodel.material_name, buffer + 7);
+            list_clear(current_submodel.faces);
+        }
+        else if (strncmp(buffer, "f ", 2) == 0) {
+            sscanf(buffer + 2, "%zu/%zu/%zu %zu/%zu/%zu %zu/%zu/%zu",
+                &current_face_data.position_indices[0], &current_face_data.uv_indices[0], &current_face_data.normal_indices[0],
+                &current_face_data.position_indices[1], &current_face_data.uv_indices[1], &current_face_data.normal_indices[1],
+                &current_face_data.position_indices[2], &current_face_data.uv_indices[2], &current_face_data.normal_indices[2]);
+
+            for (size_t i = 0; i < 3; i++) {
+                current_face_data.position_indices[i]--;
+                current_face_data.uv_indices[i]--;
+                current_face_data.normal_indices[i]--;
+            }
+
+            list_add(current_submodel.faces,(void*)&current_face_data);
+        }
+    }
+
+    list_add(model->submodel_data, (void*)&current_submodel);
+
+    fclose(obj_file);
+
+    while (std::getline(stream, line)) {
+        if (line.find('#') == 0) {
+            continue;
+        }
+        if (line.find("@player_start") == 0) {
+            std::getline(stream, line);
+            scene.player_start = read_vec3(line, line_stream);
+        }
+        else if (line.find("@player_lookat") == 0) {
+            std::getline(stream, line);
+            scene.player_lookat = read_vec3(line, line_stream);
+        }
+        else if (line.find("@worldspawn") == 0) {
+            std::getline(stream, line);
+            std::string obj_name = read_string(line, line_stream);
+
+            std::getline(stream, line);
+            Vector3 pos = read_vec3(line, line_stream);
+
+            std::getline(stream, line);
+            Vector3 rot = read_vec3(line, line_stream);
+
+            scene.worldspawn.push_back({ obj_name, pos, rot });
+        }
+        else if (line.find("@prop") == 0) {
+            std::getline(stream, line);
+            std::string obj_name = read_string(line, line_stream);
+
+            std::getline(stream, line);
+            Vector3 pos = read_vec3(line, line_stream);
+
+            std::getline(stream, line);
+            Vector3 rot = read_vec3(line, line_stream);
+
+            scene.props.push_back({ obj_name, pos, rot });
+        }
+        else if (line.find("@point_light") == 0) {
+            std::getline(stream, line);
+            Vector3 pos = read_vec3(line, line_stream);
+
+            std::getline(stream, line);
+            Vector3 color = read_vec3(line, line_stream);
+
+            std::getline(stream, line);
+            float attenuation = read_float(line, line_stream);
+
+            std::getline(stream, line);
+            float intensity = read_float(line, line_stream);
+
+            scene.point_light_info.push_back({ pos, color, attenuation, intensity });
+        }
+        else if (line.find("@directional_light") == 0) {
+            std::getline(stream, line);
+            Vector3 pos = read_vec3(line, line_stream);
+
+            std::getline(stream, line);
+            Vector3 color = read_vec3(line, line_stream);
+
+            scene.directional_light_info = { pos, color };
+        }
+    }
+
+    return scene;
+}
