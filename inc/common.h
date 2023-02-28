@@ -52,8 +52,8 @@ vector3_t vector3_init(float x, float y, float z);
 vector3_t vector3_add(vector3_t a, vector3_t b);
 vector3_t vector3_sub(vector3_t a, vector3_t b);
 vector3_t vector3_mult(vector3_t v, float f);
-
-vector3_t horizontal(vector3_t v,);
+vector3_t vector3_neg(vector3_t v);
+vector3_t vector3_horizontal(vector3_t v);
 
 float vector3_dot(vector3_t a, vector3_t b);
 vector3_t vector3_cross(vector3_t a, vector3_t b);
@@ -74,12 +74,13 @@ vector3_t vector3_right;
 //void print_vector3(vector3_t v, char* out);
 
 typedef struct matrix4_s {
-    float data[16];
-
-    const matrix4_s identity;
+    float data[16];   
 }matrix4_t;
+matrix4_t matrix4_identity;
+matrix4_t matrix4_zero;
+matrix4_t matrix4_init(float data[16]);
 matrix4_t matrix4_mult(matrix4_t a, matrix4_t b);
-vector3_t matrix4_mult_vector3(vector3_t v);
+vector3_t matrix4_mult_vector3(matrix4_t m, vector3_t v);
 
 matrix4_t matrix4_rotation(vector3_t euler);
 matrix4_t matrix4_look_at(vector3_t eye, vector3_t center, vector3_t up);
