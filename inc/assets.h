@@ -41,7 +41,7 @@ typedef struct objModelData_s {
 
 }objModelData_t;
 
-objModelData_t objModelData_load(const char* file_path);
+objModelData_t* objModelData_load(const char* file_path);
 void objModelData_freealloc(objModelData_t* data);
 
 typedef struct WorldspawnEntry_s {

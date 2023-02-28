@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "assets.h"
+#include <assets.h>
 #define BUFFER_SIZE 1024
 
 void material_freealloc(material_t* m){
@@ -13,14 +13,19 @@ void objSubmodelData_freealloc(objSubmodelData_t* submodel){
     list_destroy(&submodel->faces);
 }
 
-//TODO
 void objModelData_freealloc(objModelData_t* model){
-    //list_foreach
+    //foreach material in model->materials
+    list_foreach(material,model->materials){
+        material_freealloc((material_t*)material);
+    }
     list_destroy(&model->materials);
     list_destroy(&model->position_data);
     list_destroy(&model->uv_data);
     list_destroy(&model->normal_data);
-    //list_foreach
+    //foreach submodel in model->submodel_data
+    list_foreach(submodel,model->submodel_data){
+        objSubmodelData_freealloc((objSubmodelData_t*)submodel);
+    }
     list_destroy(&model->submodel_data);
 }
 
@@ -94,7 +99,7 @@ list_t* load_mtl_file(const char* file_path) {
 
 objModelData_t* objModelData_load(const char* file_path){
 
-    objModelData_t* model = NULL; //model à retourner
+    objModelData_t* model = malloc(sizeof(objModelData_t)); //model à retourner
 
     objSubmodelData_t current_submodel = {NULL, list_init(sizeof(objFaceData_t))}; //objSubmodelData_t courant
     objSubmodelData_t prev_face_data;
@@ -166,19 +171,19 @@ objModelData_t* objModelData_load(const char* file_path){
             list_add(model->position_data, (void*)current_position_data);
         }
         else if (strncmp(buffer, "usemtl ", 7) == 0) {
-            if (current_submodel->material_name != NULL) {
+            if (current_submodel.material_name != NULL) {
                 prev_face_data.material_name = strdup(current_submodel.material_name);
                 prev_face_data.faces = list_duplicate(current_submodel.faces);
 
                 list_add(model->submodel_data, (void*)&prev_face_data);
             }
             current_submodel.material_name = realloc(current_submodel.material_name, sizeof(char) * strlen(buffer + 7)+1);
-            strcpy(material_name, buffer + 7);
-            list_clear(current_submodel->faces);
+            strcpy(current_submodel.material_name, buffer + 7);
+            list_clear(current_submodel.faces);
         }
         else if (strncmp(buffer, "f ", 2) == 0) {
             char dummy;
-            sscanf(line.c_str(), "%c %zu/%zu/%zu %zu/%zu/%zu %zu/%zu/%zu", &dummy,
+            sscanf(buffer + 2, "%zu/%zu/%zu %zu/%zu/%zu %zu/%zu/%zu",
                 &current_face_data.position_indices[0], &current_face_data.uv_indices[0], &current_face_data.normal_indices[0],
                 &current_face_data.position_indices[1], &current_face_data.uv_indices[1], &current_face_data.normal_indices[1],
                 &current_face_data.position_indices[2], &current_face_data.uv_indices[2], &current_face_data.normal_indices[2]);
@@ -194,6 +199,8 @@ objModelData_t* objModelData_load(const char* file_path){
     }
 
     list_add(model->submodel_data, (void*)&current_submodel);
+
+    fclose(obj_file);
 
     return model;
 }
