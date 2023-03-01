@@ -63,22 +63,26 @@ float vector3_distance(vector3_t a, vector3_t b);
 vector3_t vector3_rotate_around(vector3_t v, vector3_t axis, float angle);
 vector3_t vector3_rotate(vector3_t v, vector3_t euler);
 
-vector3_t vector3_zero;
-vector3_t vector3_up;
-vector3_t vector3_down;
-vector3_t vector3_forward;
-vector3_t vector3_back;
-vector3_t vector3_left;
-vector3_t vector3_right;
+#define VECTOR3_ZERO vector3_init(0, 0, 0)
+#define VECTOR3_UP vector3_init(0, 1, 0)
+#define VECTOR3_DOWN vector3_init(0, -1, 0)
+#define VECTOR3_FORWARD vector3_init(0, 0, 1)
+#define VECTOR3_BACK vector3_init(0, 0, -1)
+#define VECTOR3_RIGHT vector3_init(1, 0, 0)
+#define VECTOR3_LEFT vector3_init(-1, 0, 0)
 
 //void print_vector3(vector3_t v, char* out);
 
 typedef struct matrix4_s {
     float data[16];   
 }matrix4_t;
-matrix4_t matrix4_identity;
-matrix4_t matrix4_zero;
-matrix4_t matrix4_init(float data[16]);
+
+matrix4_t matrix4_init(
+    float d0, float d1, float d2, float d3,
+    float d4, float d5, float d6, float d7,
+    float d8, float d9, float d10, float d11,
+    float d12, float d13, float d14, float d15);
+
 matrix4_t matrix4_mult(matrix4_t a, matrix4_t b);
 vector3_t matrix4_mult_vector3(matrix4_t m, vector3_t v);
 
@@ -86,6 +90,10 @@ matrix4_t matrix4_rotation(vector3_t euler);
 matrix4_t matrix4_look_at(vector3_t eye, vector3_t center, vector3_t up);
 matrix4_t matrix4_perspective(float fov, float aspect_ratio, float near, float far);
 matrix4_t matrix4_ortho(float left, float right, float bottom, float top, float near, float far);
+
+#define MATRIX4_IDENTITY    matrix4_init(1, 0, 0, 0,  0, 1, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1)
+#define MATRIX4_ZERO        matrix4_init(0, 0, 0, 0,  0, 0, 0, 0,  0, 0, 0, 0,  0, 0, 0, 0)
+
 
 /*
 typedef struct vector2_s {
@@ -100,6 +108,6 @@ struct Vector2i {
     const int x;
     const int y;
 };
-/*
+*/
 
 #endif

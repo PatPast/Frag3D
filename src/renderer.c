@@ -1,4 +1,5 @@
 #include <glad/glad.h>
+#include <common.h>
 #include <render.h>
 //#include "render_debug.h"
 #include "../config.h"

@@ -1,6 +1,7 @@
 #include <SDL2/SDL.h>
 #include <glad/glad.h>
 #include <math.h>
+#include <common.h>
 
 //coucou
 //test 2
