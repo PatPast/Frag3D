@@ -46,7 +46,7 @@ void objModelData_freealloc(objModelData_t* model);
 void objModelData_destroy(objModelData_t** model);
 
 
-typedef struct WorldspawnEntry_s {
+typedef struct worldspawnEntry_s {
     char* obj_name;
     float position[3];
     float rotation[3];
@@ -79,6 +79,6 @@ typedef struct scene_s {
     list_t* directional_light_info; //pointLightInfo_t
 }scene_t;
 
-scene_t read_scene(const char* file_path);
+scene_t scene_read_scene(const char* file_path);
 
 #endif

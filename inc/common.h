@@ -94,20 +94,13 @@ matrix4_t matrix4_ortho(float left, float right, float bottom, float top, float 
 #define MATRIX4_IDENTITY    matrix4_init(1, 0, 0, 0,  0, 1, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1)
 #define MATRIX4_ZERO        matrix4_init(0, 0, 0, 0,  0, 0, 0, 0,  0, 0, 0, 0,  0, 0, 0, 0)
 
-
-/*
 typedef struct vector2_s {
-    const float x;
-    const float y;
-};
-
-vector2_t vector2_init(float x, float y,);
-vector2_t vector2_mult(vector2_t v, float f);
-
-struct Vector2i {
-    const int x;
-    const int y;
-};
-*/
+    float x;
+    float y;
+}vector2_t;
+typedef struct vector2i_s {
+    int x;
+    int y;
+}vector2i_t;
 
 #endif

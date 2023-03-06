@@ -9,125 +9,103 @@
 #include <assets.h>
 #include <common.h>
 
-constexpr size_t point_shadowmap_size = 1024;
-constexpr size_t directional_shadowmap_size = 2048;
-constexpr float near_plane = 0.001f;
-constexpr float far_plane = 1000.0f;
-constexpr float shadow_near_plane = 0.001f;
-constexpr float shadow_far_plane = 1000.0f;
-constexpr Vector2i draw_framebuffer_size(640, 360);
-constexpr int max_point_light_count = 10; // TODO @CLEANUP: We have the same define in the world shader
 
 typedef int uniform_loc_t;
 typedef unsigned int shader_handle_t;
 typedef unsigned int buffer_handle_t;
 typedef unsigned int tex_handle_t;
 
-constexpr shader_handle_t default_shader_handle = 0;
-constexpr buffer_handle_t default_buffer_handle = 0;
-constexpr tex_handle_t default_tex_handle = 0;
-
 typedef struct shader_s {
-    shader_handle_t shader_program_handle{ default_shader_handle };
-    uniform_loc_t get_location(const std::string& property_name) const; 
+    shader_handle_t shader_program_handle;
 }shader_t;
 
-explicit Shader() = default;
-explicit Shader(const std::string& file_path);
-void set_int(const std::string& property_name, int i) const;
-void set_vec3(const std::string& roperty_name, const Vector3& v) const;
-void set_mat4(const std::string& property_name, const Matrix4& m) const;
-void set_float(const std::string& property_name, float f) const;
-void use() const;
+shader_t shader_init(char* file_path);
+void shader_set_int(shader_t sh, char* property_name, int i);
+void shader_set_vec3(shader_t sh, char* property_name, vector3_t v);
+void shader_set_mat4(shader_t sh, char* property_name, matrix4_t m);
+void shader_set_float(shader_t sh, char* property_name, float f);
+void shader_use(shader_t sh);
 
-struct Image {
+typedef struct image_s {
     int width;
     int height;
     unsigned char* image_data;
+}image_t;
 
-    explicit Image(const std::string& file_path, bool flip_vertical);
-    Image(const Image& other) = delete;
-    Image(const Image&& other) = delete;
-    Image& operator=(Image& other) = delete;
-    Image& operator=(Image&& other) = delete;
-    ~Image();
-};
+image_t* image_init(char* file_path, int flip_vertical);
+void image_freealloc(image_t im);
 
-class StaticRenderUnit {
-    buffer_handle_t vao{ default_buffer_handle };
-    buffer_handle_t vbo{ default_buffer_handle };
-    buffer_handle_t ibo{ default_buffer_handle };
-    tex_handle_t tex_handle{ default_tex_handle };
-    size_t index_data_length{ 0 };
 
-    static const Matrix4 perspective;
+typedef struct staticRenderUnit_s {
+    buffer_handle_t vao;
+    buffer_handle_t vbo;
+    buffer_handle_t ibo;
+    tex_handle_t tex_handle;
+    size_t index_data_length;
+}staticRenderUnit_t;
 
-public:
-    StaticRenderUnit(const Material& material, const ObjSubmodelData& obj_submodel_data, const ObjModelData& obj_data,
-        const Vector3& position, const Vector3& rotation);
-    ~StaticRenderUnit();
 
-    void render() const;
-};
+staticRenderUnit_t* staticRenderUnit_init(material_t* material, objSubmodelData_t* obj_submodel_data, objModelData_t* obj_data,
+    vector3_t position, vector3_t rotation);
+void render();
 
-struct DirectionalLight {
-    std::unique_ptr<Shader> shader;
-    buffer_handle_t fbo{ default_buffer_handle };
-    Matrix4 view_proj{ 0 };
-    tex_handle_t depth_tex_handle{ default_tex_handle };
+typedef struct directionalLight_s {
+    shader_t shader;
+    buffer_handle_t fbo;
+    matrix4_t view_proj;
+    tex_handle_t depth_tex_handle;
 
-    DirectionalLight() = default;
-    explicit DirectionalLight(const DirectionalLightInfo& info);
-    ~DirectionalLight();
-};
+}directionalLight_t;
 
-struct PointLight {
-    PointLightInfo base_info;
-    PointLightInfo current_info;
+directionalLight_t* directionalLight_init(directionalLightInfo_t info);
+
+typedef struct pointLight_s {
+    pointLightInfo_t base_info;
+    pointLightInfo_t current_info;
     int index;
-    std::unique_ptr<Shader> shader;
+    shader_t shader;
 
-    PointLight(const PointLightInfo& point_light_info, int light_index);
-    float wiggle_intensity(float dt);
-};
+}pointLight_t;
 
-struct Skybox {
-    std::unique_ptr<Shader> shader;
-    tex_handle_t cubemap_handle{ default_tex_handle };
-    buffer_handle_t vao{ default_buffer_handle };
-    buffer_handle_t vbo{ default_buffer_handle };
+pointLight_t* pointLight_init(pointLightInfo_t point_light_info, int light_index);
+float wiggle_intensity(float dt);
 
-    Skybox() = default;
-    explicit Skybox(const std::string& skybox_path, const Matrix4& projection);
-    ~Skybox();
-};
 
-class Renderer {
-    std::vector<std::unique_ptr<StaticRenderUnit>> render_units;
-    std::unique_ptr<Shader> world_shader;
-    std::unique_ptr<DirectionalLight> directional_light;
-    std::unique_ptr<Skybox> skybox;
+typedef struct skybox_s {
+    shader_t shader;
+    tex_handle_t cubemap_handle;
+    buffer_handle_t vao;
+    buffer_handle_t vbo;
 
-    std::vector<std::unique_ptr<PointLight>> point_lights;
-    tex_handle_t point_light_cubemap_handle { default_tex_handle };
-    buffer_handle_t point_light_fbo { default_buffer_handle};
+}skybox_t;
 
-    buffer_handle_t draw_fbo{ default_buffer_handle };
-    tex_handle_t draw_tex_handle { default_tex_handle };
-    buffer_handle_t draw_rbo{ default_buffer_handle };
+skybox_t* skybox_init(char* skybox_path, matrix4_t projection);
+    
 
-    void register_static_obj(const ObjModelData& obj_data, const Vector3& position, const Vector3& rotation);
-    void register_point_light(const PointLightInfo& point_light_info);
-    void register_directional_light(const DirectionalLightInfo& directional_light_info);
+typedef struct renderer_s {
+    list_t* render_units; //staticRenderUnit
+    shader_t world_shader;
+    directionalLight_t* directional_light;
+    skybox_t* skybox;
 
-public:
-    Renderer();
-    ~Renderer();
+    list_t* point_lights; //pointLight
+    tex_handle_t point_light_cubemap_handle;
+    buffer_handle_t point_light_fbo;
 
-    void register_scene(const Scene& scene);
-    void render(const Matrix4& player_view_matrix, float dt);
+    buffer_handle_t draw_fbo;
+    tex_handle_t draw_tex_handle;
+    buffer_handle_t draw_rbo;
+    
+}renderer_t;
 
-};
+void renderer_register_static_obj(renderer_t* rdr, objModelData_t* obj_data, vector3_t position, vector3_t rotation);
+void renderer_register_point_light(renderer_t* rdr, pointLightInfo_t* point_light_info);
+void renderer_register_directional_light(renderer_t* rdr, directionalLightInfo_t* directional_light_info);
+renderer_t* renderer_init();
+void renderer_freealloc(renderer_t* rdr);
+void renderer_destroy(renderer_t** rdr);
+void renderer_register_scene(renderer_t* rdr, scene_t* scene);
+void renderer_render(renderer_t* rdr, matrix4_t player_view_matrix, float dt);
 
 
 #endif

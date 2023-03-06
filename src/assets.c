@@ -212,7 +212,7 @@ void objModelData_destroy(objModelData_t** model){
 
 scene_t read_scene(const char* file_path){
 
-    scene_t scene = malloc(sizeof(scene_t));
+    scene_t* scene = malloc(sizeof(scene_t));
 
     char buffer[BUFFER_SIZE]; //stocke la ligne courante
     char* end; //pointe vers la fin de la ligne
@@ -237,7 +237,7 @@ scene_t read_scene(const char* file_path){
         if (buffer[0] == '\0' || buffer[0] == '#') {
             continue;
         }
-
+        //TODO terminer la fonction
         if (strncmp(buffer, "@player_start", 13) == 0) {
             fgets(buffer, BUFFER_SIZE, scene_file);
             sscanf(buffer, "%f %f", &current_uv_data[0], &current_uv_data[1]);

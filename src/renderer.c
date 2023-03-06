@@ -4,23 +4,34 @@
 //#include "render_debug.h"
 #include "../config.h"
 
-constexpr float aspect_ratio = static_cast<float>(window_width) / static_cast<float>(window_height);
-const Matrix4 perspective = Matrix4::perspective(45.0f, aspect_ratio, near_plane, far_plane);
+size_t point_shadowmap_size = 1024;
+size_t directional_shadowmap_size = 2048;
+float near_plane = 0.001f;
+float far_plane = 1000.0f;
+float shadow_near_plane = 0.001f;
+float shadow_far_plane = 1000.0f;
+vector2i_t draw_framebuffer_size = {640, 360};
+int window_width = 1080, window_height = 720;
+int max_point_light_count = 10; // TODO @CLEANUP: We have the same define in the world shader
 
-void create_draw_fbo(buffer_handle_t& draw_fbo, tex_handle_t& draw_tex_handle, buffer_handle_t& draw_rbo) {
 
-    glGenTextures(1, &draw_tex_handle);
+#define aspect_ratio ((float)window_width / (float)window_height)
+#define MATRIX4_PERSPECTIVE matrix4_perspective(45.0f, aspect_ratio, near_plane, far_plane)
+
+void create_draw_fbo(buffer_handle_t draw_fbo, tex_handle_t draw_tex_handle, buffer_handle_t draw_rbo) {
+
+    glGenTextures(1, draw_tex_handle);
     glBindTexture(GL_TEXTURE_2D, draw_tex_handle);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, draw_framebuffer_size.x, draw_framebuffer_size.y,
-        0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+        0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-    glGenFramebuffers(1, &draw_fbo);
+    glGenFramebuffers(1, draw_fbo);
     glBindFramebuffer(GL_FRAMEBUFFER, draw_fbo);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, draw_tex_handle, 0);
 
-    glGenRenderbuffers(1, &draw_rbo);
+    glGenRenderbuffers(1, draw_rbo);
     glBindRenderbuffer(GL_RENDERBUFFER, draw_rbo);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, draw_framebuffer_size.x, draw_framebuffer_size.y);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, draw_rbo);
@@ -28,9 +39,9 @@ void create_draw_fbo(buffer_handle_t& draw_fbo, tex_handle_t& draw_tex_handle, b
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void create_point_light_cubemap_and_fbo(tex_handle_t& cubemap_handle, buffer_handle_t& fbo, int point_light_count) {
+void create_point_light_cubemap_and_fbo(tex_handle_t cubemap_handle, buffer_handle_t fbo, int point_light_count) {
     
-    glGenTextures(1, &cubemap_handle);
+    glGenTextures(1, cubemap_handle);
     glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, cubemap_handle);
     glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -38,12 +49,12 @@ void create_point_light_cubemap_and_fbo(tex_handle_t& cubemap_handle, buffer_han
     glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
     glTexImage3D(GL_TEXTURE_CUBE_MAP_ARRAY, 0, GL_DEPTH_COMPONENT, point_shadowmap_size, point_shadowmap_size,
-        6 * point_light_count, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+        6 * point_light_count, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
     glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, 0);
 
     check_gl_error("point_light_cubemap");
 
-    glGenFramebuffers(1, &fbo);
+    glGenFramebuffers(1, fbo);
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, cubemap_handle, 0);
     glReadBuffer(GL_NONE);
@@ -52,7 +63,8 @@ void create_point_light_cubemap_and_fbo(tex_handle_t& cubemap_handle, buffer_han
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-Renderer::Renderer() {
+renderer_t* renderer_init() {
+    renderer_t* rdr;
     glewInit(); // Needs to be after the glfw context creation
     // TODO @CLEANUP: This looks stupid. We're doing this stuff on a variable declaration in main()
     // Would look better in an Init function or something.
@@ -64,52 +76,53 @@ Renderer::Renderer() {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glDepthFunc(GL_LESS);
 
+    rdr = malloc(sizeof(renderer_t));
+
     create_draw_fbo(this->draw_fbo, this->draw_tex_handle, this->draw_rbo);
     create_point_light_cubemap_and_fbo(this->point_light_cubemap_handle, this->point_light_fbo, max_point_light_count);
 
-    this->world_shader = std::make_unique<Shader>("src/render/shader/world.glsl");
-    this->world_shader->use();
-    this->world_shader->set_int("u_texture", 0);
-    this->world_shader->set_mat4("u_projection", perspective);
+    rdr->world_shader = shader_init("src/render/shader/world.glsl");
+    shader_use(rdr->world_shader);
+    shader_set_int(rdr->world_shader, "u_texture", 0);
+    shader_set_mat4(rdr->world_shader, "u_projection", MATRIX4_PERSPECTIVE);
 
     // TODO @CLEANUP: Currently the render units are actually static render units
     // We change the mesh data itself to apply the initial transformation
     // For dynamic objects, we'll have to use this uniform to transform them every frame
-    this->world_shader->set_mat4("u_model", Matrix4::identity);
+    shader_set_mat4(rdr->world_shader, "u_model", MATRIX4_IDENTITY);
                       
-    this->world_shader->set_int("u_shadowmap_directional", 1);
-    this->world_shader->set_int("u_shadowmaps_point", 2);
-    this->world_shader->set_float("u_far_plane", shadow_far_plane);
+    shader_set_int(rdr->world_shader, "u_shadowmap_directional", 1);
+    shader_set_int(rdr->world_shader, "u_shadowmaps_point", 2);
+    shader_set_float(rdr->world_shader, "u_far_plane", shadow_far_plane);
 
-    this->skybox = std::make_unique<Skybox>("assets/skybox/gehenna", perspective);
+    rdr->skybox = skybox_init("assets/skybox/gehenna", MATRIX4_PERSPECTIVE);
 }
 
-void Renderer::register_scene(const Scene& scene) {
+void renderer_register_scene(renderer_t* rdr, scene_t* scene) {
 
-    for (const WorldspawnEntry& entry : scene.worldspawn) {
-        const ObjModelData obj_data(entry.obj_name);
-        register_static_obj(obj_data, entry.position, entry.rotation);
+    list_foreach(entry,scene->worldspawn) {
+        renderer_register_static_obj(obj_data, ((worldspawnEntry_t*)entry)->position, ((worldspawnEntry_t*)entry)->rotation);
     }
 
-    for (const PropEntry& entry : scene.props) {
-        const ObjModelData obj_data(entry.obj_name);
-        register_static_obj(obj_data, entry.position, entry.rotation);
+    list_foreach(entry,scene->props) {
+        renderer_register_static_obj(obj_data, ((propEntry_t*)entry)->position, ((propEntry_t*)entry)->rotation);
     }
 
-    for (const PointLightInfo& point_light_info : scene.point_light_info) {
-        register_point_light(point_light_info);
+    list_foreach(entry,scene->point_light_info) {
+        renderer_register_point_light((pointLightInfo_t*)entry);
     }
 
     register_directional_light(scene.directional_light_info);
 
 }
 
-void Renderer::register_static_obj(const ObjModelData& obj_data, const Vector3& position, const Vector3& rotation) {
-    for (const ObjSubmodelData& obj_face_data : obj_data.submodel_data) {
-        for (const Material& m : obj_data.materials) {
-            if (m.name == obj_face_data.material_name) {
-                std::unique_ptr<StaticRenderUnit> ru = std::make_unique<StaticRenderUnit>(m, obj_face_data, obj_data, position, rotation);
-                this->render_units.push_back(std::move(ru));
+void renderer_register_static_obj(renderer_t* rdr, objModelData_t* obj_data, vector3_t position, vector3_t rotation) {
+    list_foreach(obj_face_data, obj_data->submodel_data) {
+        list_foreach(m, obj_data->materials) {
+            if (strcmp(((material_t*)m)->name, ((objSubmodelData_t*)obj_face_data)->material_name) == 0) {
+                staticRenderUnit_t* ru = staticRenderUnit_init((material_t*)m, (objSubmodelData_t*)obj_face_data, obj_data, position, rotation);
+                list_add(rdr->render_units,ru);
+                free(ru);
             }
         }
     }
@@ -218,12 +231,21 @@ void Renderer::render(const Matrix4& player_view_matrix, float dt) {
         GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 }
 
-Renderer::~Renderer() {
-    glDeleteTextures(1, &this->point_light_cubemap_handle);
-    glDeleteFramebuffers(1, &this->point_light_fbo);
+void renderer_freealloc(renderer_t* rdr){
+    list_destroy(&rdr->render_units);
+    list_destroy(&rdr->point_lights);
+}
 
-    glDeleteTextures(1, &this->draw_tex_handle);
-    glDeleteFramebuffers(1, &this->draw_fbo);
-    glDeleteRenderbuffers(1, &this->draw_rbo);
+void renderer_destroy(renderer_t** rdr) {
+    glDeleteTextures(1, (*rdr)->point_light_cubemap_handle);
+    glDeleteFramebuffers(1, (*rdr)->point_light_fbo);
+
+    glDeleteTextures(1, (*rdr)->draw_tex_handle);
+    glDeleteFramebuffers(1, (*rdr)->draw_fbo);
+    glDeleteRenderbuffers(1, (*rdr)->draw_rbo);
+
+    renderer_freealloc(*rdr);
+    free(*rdr);
+    *rdr = NULL;
    
 }
