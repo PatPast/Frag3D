@@ -67,7 +67,10 @@ typedef struct pointLight_s {
 
 }pointLight_t;
 
+
+
 pointLight_t* pointLight_init(pointLightInfo_t point_light_info, int light_index);
+void pointLight_destroy(pointLight_t ** pl);
 float wiggle_intensity(float dt);
 
 
@@ -80,7 +83,7 @@ typedef struct skybox_s {
 }skybox_t;
 
 skybox_t* skybox_init(char* skybox_path, matrix4_t projection);
-    
+void skybox_destroy(skybox_t** );
 
 typedef struct renderer_s {
     list_t* render_units; //staticRenderUnit
@@ -99,8 +102,8 @@ typedef struct renderer_s {
 }renderer_t;
 
 void renderer_register_static_obj(renderer_t* rdr, objModelData_t* obj_data, vector3_t position, vector3_t rotation);
-void renderer_register_point_light(renderer_t* rdr, pointLightInfo_t* point_light_info);
-void renderer_register_directional_light(renderer_t* rdr, directionalLightInfo_t* directional_light_info);
+void renderer_register_point_light(renderer_t* rdr, pointLightInfo_t point_light_info);
+void renderer_register_directional_light(renderer_t* rdr, directionalLightInfo_t directional_light_info);
 renderer_t* renderer_init();
 void renderer_freealloc(renderer_t* rdr);
 void renderer_destroy(renderer_t** rdr);

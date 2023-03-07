@@ -1,6 +1,7 @@
 #include <glad/glad.h>
 #include <common.h>
 #include <render.h>
+#include <string.h>
 //#include "render_debug.h"
 #include "../config.h"
 
@@ -17,6 +18,23 @@ int max_point_light_count = 10; // TODO @CLEANUP: We have the same define in the
 
 #define aspect_ratio ((float)window_width / (float)window_height)
 #define MATRIX4_PERSPECTIVE matrix4_perspective(45.0f, aspect_ratio, near_plane, far_plane)
+
+pointLight_t* pointLight_init(pointLightInfo_t point_light_info, int light_index){
+    pointLight_t* pl = malloc(sizeof(pointLight_t));
+    pl->base_info = point_light_info;
+    pl->current_info = point_light_info;
+    pl->index = light_index;
+    return pl;
+}
+
+void pointLight_destroy(pointLight_t ** pl){
+    free(*pl);
+    *pl = NULL; 
+}
+
+
+
+
 
 void create_draw_fbo(buffer_handle_t draw_fbo, tex_handle_t draw_tex_handle, buffer_handle_t draw_rbo) {
 
@@ -101,22 +119,23 @@ renderer_t* renderer_init() {
 void renderer_register_scene(renderer_t* rdr, scene_t* scene) {
 
     list_foreach(entry,scene->worldspawn) {
-        renderer_register_static_obj(obj_data, ((worldspawnEntry_t*)entry)->position, ((worldspawnEntry_t*)entry)->rotation);
+        renderer_register_static_obj(rdr, ((worldspawnEntry_t*)entry)->position, ((worldspawnEntry_t*)entry)->rotation);
     }
 
     list_foreach(entry,scene->props) {
-        renderer_register_static_obj(obj_data, ((propEntry_t*)entry)->position, ((propEntry_t*)entry)->rotation);
+        renderer_register_static_obj(rdr, ((propEntry_t*)entry)->position, ((propEntry_t*)entry)->rotation);
     }
 
     list_foreach(entry,scene->point_light_info) {
         renderer_register_point_light((pointLightInfo_t*)entry);
     }
 
-    register_directional_light(scene.directional_light_info);
+    register_directional_light(rdr, scene->directional_light_info);
 
 }
 
 void renderer_register_static_obj(renderer_t* rdr, objModelData_t* obj_data, vector3_t position, vector3_t rotation) {
+    //TODO list_foreach imbrication erreur
     list_foreach(obj_face_data, obj_data->submodel_data) {
         list_foreach(m, obj_data->materials) {
             if (strcmp(((material_t*)m)->name, ((objSubmodelData_t*)obj_face_data)->material_name) == 0) {
@@ -128,17 +147,18 @@ void renderer_register_static_obj(renderer_t* rdr, objModelData_t* obj_data, vec
     }
 }
 
-void Renderer::register_point_light(const PointLightInfo& point_light_info) {
-    const int index_to_add = static_cast<int>(this->point_lights.size());
-    std::unique_ptr<PointLight> light = std::make_unique<PointLight>(point_light_info, index_to_add);
+void renderer_register_point_light(renderer_t* rdr, pointLightInfo_t point_light_info) {
+    const int index_to_add = (int)(rdr->point_lights->size);
+    pointLight_t* light = pointLight_init(point_light_info, index_to_add);
+    char* buffer[256];
+    list_add(rdr->point_lights, light);
+    free(light);
 
-    this->point_lights.push_back(std::move(light));
+    shader_use(rdr->world_shader);
+    shader_set_int(rdr->world_shader, "u_point_light_count", index_to_add + 1);
 
-    this->world_shader->use();
-    this->world_shader->set_int("u_point_light_count", index_to_add + 1);
-
-    const std::string index_str = std::to_string(index_to_add);
-    const std::string pos_prop_name = "u_point_lights[" + index_str + "].position";
+    char* index_str = std::to_string(index_to_add);
+    char* pos_prop_name = "u_point_lights[" + index_str + "].position";
     this->world_shader->set_vec3(pos_prop_name, this->point_lights[index_to_add]->base_info.position);
 
     const std::string color_prop_name = "u_point_lights[" + index_str + "].color";
