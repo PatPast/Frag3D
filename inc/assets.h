@@ -24,7 +24,7 @@ void objSubmodelData_freealloc(objSubmodelData_t* submodel);
 typedef struct material_s {
     char* name;
     char* diffuse_texture_name;
-    float diffuse[3];
+    vector3_t diffuse;
     float transparency;
 }material_t;
 
@@ -48,31 +48,31 @@ void objModelData_destroy(objModelData_t** model);
 
 typedef struct worldspawnEntry_s {
     char* obj_name;
-    float position[3];
-    float rotation[3];
+    vector3_t position;
+    vector3_t rotation;
 }worldspawnEntry_t;
 
 typedef struct propEntry_s {
     char* obj_name;
-    float position[3];
-    float rotation[3];
+    vector3_t position;
+    vector3_t rotation;
 }propEntry_t;
 
 typedef struct pointLightInfo_s {
-    float position[3];
-    float color[3];
+    vector3_t position;
+    vector3_t color;
     float intensity;
     float attenuation;
 }pointLightInfo_t;
 
 typedef struct directionalLightInfo_s {
-    float position[3];
-    float color[3];
+    vector3_t position;
+    vector3_t color;
 }directionalLightInfo_t;
 
 typedef struct scene_s {
-    float player_start[3];
-    float player_lookat[3];
+    vector3_t player_start;
+    vector3_t player_lookat;
     list_t* worldspawn; //worldspawnEntry_t
     list_t* props; //propEntry_t
     list_t* point_light_info; //pointLightInfo_t

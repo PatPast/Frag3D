@@ -12,7 +12,8 @@ float far_plane = 1000.0f;
 float shadow_near_plane = 0.001f;
 float shadow_far_plane = 1000.0f;
 vector2i_t draw_framebuffer_size = {640, 360};
-int window_width = 1080, window_height = 720;
+int window_width = 1080;
+int window_height = 720;
 int max_point_light_count = 10; // TODO @CLEANUP: We have the same define in the world shader
 
 
@@ -150,44 +151,52 @@ void renderer_register_static_obj(renderer_t* rdr, objModelData_t* obj_data, vec
 void renderer_register_point_light(renderer_t* rdr, pointLightInfo_t point_light_info) {
     const int index_to_add = (int)(rdr->point_lights->size);
     pointLight_t* light = pointLight_init(point_light_info, index_to_add);
-    char* buffer[256];
+
     list_add(rdr->point_lights, light);
     free(light);
 
     shader_use(rdr->world_shader);
     shader_set_int(rdr->world_shader, "u_point_light_count", index_to_add + 1);
 
-    char* index_str = std::to_string(index_to_add);
-    char* pos_prop_name = "u_point_lights[" + index_str + "].position";
-    this->world_shader->set_vec3(pos_prop_name, this->point_lights[index_to_add]->base_info.position);
+    char index_str[10];
+    snprintf(index_str, 10, "%d", index_to_add);
 
-    const std::string color_prop_name = "u_point_lights[" + index_str + "].color";
-    this->world_shader->set_vec3(color_prop_name, this->point_lights[index_to_add]->base_info.color);
+    char pos_prop_name[50];
+    snprintf(pos_prop_name, 50, "u_point_lights[%s].position", index_str);
 
-    const std::string intensity_prop_name = "u_point_lights[" + index_str + "].intensity";
-    this->world_shader->set_float(intensity_prop_name, this->point_lights[index_to_add]->base_info.intensity);
+    shader_set_vec3(rdr->world_shader, pos_prop_name, this->point_lights[index_to_add]->base_info.position);
 
-    const std::string att_prop_name = "u_point_lights[" + index_str + "].attenuation";
-    this->world_shader->set_float(att_prop_name, this->point_lights[index_to_add]->base_info.attenuation);
+    char color_prop_name[50];
+    snprintf(color_prop_name, 50, "u_point_lights[%s].color", index_str);
+    shader_set_vec3(rdr->world_shader, color_prop_name, this->point_lights[index_to_add]->base_info.color);
+
+    char intensity_prop_name[50];
+    snprintf(intensity_prop_name, 50, "u_point_lights[%s].intensity", index_str);
+    shader_set_float(rdr->world_shader, intensity_prop_name, this->point_lights[index_to_add]->base_info.intensity);
+
+
+    char attenuation_prop_name[50];
+    snprintf(intensity_prop_name, 50, "u_point_lights[%s].attenuation", index_str);
+    shader_set_float(rdr->world_shader, attenuation_prop_name, this->point_lights[index_to_add]->base_info.attenuation);
 }
 
 void Renderer::register_directional_light(const DirectionalLightInfo& directional_light_info) {
     this->directional_light = std::make_unique<DirectionalLight>(directional_light_info);
-    this->world_shader->use();
-    this->world_shader->set_vec3("u_directional_light_dir", directional_light_info.position);
-    this->world_shader->set_vec3("u_directional_light_color", directional_light_info.color);
-    this->world_shader->set_mat4("u_directional_light_vp", this->directional_light->view_proj);
+    shader_use(rdr->world_shader );
+    shader_set_vec3(rdr->world_shader, "u_directional_light_dir", directional_light_info.position);
+    shader_set_vec3(rdr->world_shader, "u_directional_light_color", directional_light_info.color);
+    shader_set_mat4(rdr->world_shader, "u_directional_light_vp", this->directional_light->view_proj);
 }
 
-void Renderer::render(const Matrix4& player_view_matrix, float dt) {
-
+void renderer_render(renderer_t* rdr, matrix4_t player_view_matrix, float dt) {
+    
     // TODO @CLEANUP: Probably gonna look different when we go through the other light paramters
     for (auto& point_light : this->point_lights) {
         const float intensity = point_light->wiggle_intensity(dt);
 
         const std::string intensity_prop_name = "u_point_lights[" + std::to_string(point_light->index) + "].intensity";
-        this->world_shader->use();
-        this->world_shader->set_float(intensity_prop_name, intensity);
+        shader_use(rdr->world_shader);
+        rdr->world_shader->set_float(intensity_prop_name, intensity);
     }
     
     // Directional shadow
@@ -215,12 +224,12 @@ void Renderer::render(const Matrix4& player_view_matrix, float dt) {
 
     // Draw to backbuffer
     glBindFramebuffer(GL_FRAMEBUFFER, this->draw_fbo);
-    this->world_shader->use();
-    this->world_shader->set_mat4("u_view", player_view_matrix);
+    shader_use(rdr->world_shader);
+    shader_set_mat4(rdr->world_shader, "u_view", player_view_matrix);
     glViewport(0, 0, draw_framebuffer_size.x, draw_framebuffer_size.y);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    this->world_shader->use();
-    this->world_shader->set_mat4("u_view", player_view_matrix);
+    shader_use(rdr->world_shader);
+    shader_set_mat4(rdr->world_shader, "u_view", player_view_matrix);
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, this->directional_light->depth_tex_handle);
     glActiveTexture(GL_TEXTURE2);

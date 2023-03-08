@@ -103,9 +103,9 @@ objModelData_t* objModelData_load(const char* file_path){
     objSubmodelData_t prev_face_data;
     objFaceData_t current_face_data;
 
-    float current_position_data[3];
-    float current_uv_data[2];
-    float current_normal_data[3];
+    vector3_t current_position_data;
+    vector2_t current_uv_data;
+    vector3_t current_normal_data;
 
     char buffer[BUFFER_SIZE]; //stocke la ligne courante
     char* end; //pointe vers la fin de la ligne
@@ -138,9 +138,9 @@ objModelData_t* objModelData_load(const char* file_path){
     free(mtllib_path);
     mtllib_name = mtllib_path = slash_index = NULL;
     
-    model->position_data = list_init(sizeof(float)*3);
-    model->uv_data = list_init(sizeof(float)*2);
-    model->normal_data = list_init(sizeof(float)*3);
+    model->position_data = list_init(sizeof(vector3_t));
+    model->uv_data = list_init(sizeof(vector2_t));
+    model->normal_data = list_init(sizeof(vector3_t));
     model->submodel_data = list_init(sizeof(objSubmodelData_t));
 
 
@@ -158,16 +158,16 @@ objModelData_t* objModelData_load(const char* file_path){
             continue;
         }
         if (strncmp(buffer, "vt ", 3) == 0) {
-            sscanf(buffer + 3, "%f %f", &current_uv_data[0], &current_uv_data[1]);
-            list_add(model->uv_data, (void*)current_uv_data);
+            sscanf(buffer + 3, "%f %f", &current_uv_data.x, &current_uv_data.y);
+            list_add(model->uv_data, (void*)&current_uv_data);
         }
         else if (strncmp(buffer, "vn ", 3) == 0) {
-            sscanf(buffer + 3, "%f %f %f", &current_normal_data[0], &current_normal_data[1], &current_normal_data[2]);
-            list_add(model->normal_data, (void*)current_normal_data);
+            sscanf(buffer + 3, "%f %f %f", &current_normal_data.x, &current_normal_data.y, &current_normal_data.z);
+            list_add(model->normal_data, (void*)&current_normal_data);
         }
         else if (strncmp(buffer, "v ", 2) == 0) {
-            sscanf(buffer + 2, "%f %f %f", &current_position_data[0], &current_position_data[1], &current_position_data[2]);
-            list_add(model->position_data, (void*)current_position_data);
+            sscanf(buffer + 2, "%f %f %f", &current_position_data.x, &current_position_data.y, &current_position_data.z);
+            list_add(model->position_data, (void*)&current_position_data);
         }
         else if (strncmp(buffer, "usemtl ", 7) == 0) {
             if (current_submodel.material_name != NULL) {
@@ -210,7 +210,7 @@ void objModelData_destroy(objModelData_t** model){
 }
 
 
-scene_t read_scene(const char* file_path){
+scene_t* read_scene(const char* file_path){
 
     scene_t* scene = malloc(sizeof(scene_t));
 
@@ -219,10 +219,10 @@ scene_t read_scene(const char* file_path){
 
     FILE* scene_file = fopen(file_path, "r");
     
-    if (obj_file == NULL) {
-        fprintf(stderr, "Impossible d'ouvrir le fichier de scene '%s'\n", obj_file);
+    if (scene_file == NULL) {
+        fprintf(stderr, "Impossible d'ouvrir le fichier de scene '%s'\n", file_path);
         free(scene);
-        return model;
+        return scene;
     }
 
     while (fgets(buffer, BUFFER_SIZE, scene_file)) {
@@ -240,42 +240,17 @@ scene_t read_scene(const char* file_path){
         //TODO terminer la fonction
         if (strncmp(buffer, "@player_start", 13) == 0) {
             fgets(buffer, BUFFER_SIZE, scene_file);
-            sscanf(buffer, "%f %f", &current_uv_data[0], &current_uv_data[1]);
-            list_add(model->uv_data, (void*)current_uv_data);
+            sscanf(buffer, "%f %f %f", &scene->player_start.x, &scene->player_start.y, &scene->player_start.z);
         }
         else if (strncmp(buffer, "@player_lookat", 14) == 0) {
-            sscanf(buffer + 3, "%f %f %f", &current_normal_data[0], &current_normal_data[1], &current_normal_data[2]);
-            list_add(model->normal_data, (void*)current_normal_data);
+            fgets(buffer, BUFFER_SIZE, scene_file);
+            sscanf(buffer, "%f %f %f", &scene->player_lookat.x, &scene->player_lookat.y, &scene->player_lookat.z);
         }
         else if (strncmp(buffer, "@worldspawn", 11) == 0) {
             sscanf(buffer + 2, "%f %f %f", &current_position_data[0], &current_position_data[1], &current_position_data[2]);
             list_add(model->position_data, (void*)current_position_data);
         }
-        else if (strncmp(buffer, "usemtl ", 7) == 0) {
-            if (current_submodel.material_name != NULL) {
-                prev_face_data.material_name = strdup(current_submodel.material_name);
-                prev_face_data.faces = list_duplicate(current_submodel.faces);
-
-                list_add(model->submodel_data, (void*)&prev_face_data);
-            }
-            current_submodel.material_name = realloc(current_submodel.material_name, sizeof(char) * strlen(buffer + 7)+1);
-            strcpy(current_submodel.material_name, buffer + 7);
-            list_clear(current_submodel.faces);
-        }
-        else if (strncmp(buffer, "f ", 2) == 0) {
-            sscanf(buffer + 2, "%zu/%zu/%zu %zu/%zu/%zu %zu/%zu/%zu",
-                &current_face_data.position_indices[0], &current_face_data.uv_indices[0], &current_face_data.normal_indices[0],
-                &current_face_data.position_indices[1], &current_face_data.uv_indices[1], &current_face_data.normal_indices[1],
-                &current_face_data.position_indices[2], &current_face_data.uv_indices[2], &current_face_data.normal_indices[2]);
-
-            for (size_t i = 0; i < 3; i++) {
-                current_face_data.position_indices[i]--;
-                current_face_data.uv_indices[i]--;
-                current_face_data.normal_indices[i]--;
-            }
-
-            list_add(current_submodel.faces,(void*)&current_face_data);
-        }
+        
     }
 
     list_add(model->submodel_data, (void*)&current_submodel);
