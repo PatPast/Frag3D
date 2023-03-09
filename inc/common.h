@@ -14,6 +14,7 @@ typedef struct list_elem_s {
     struct list_elem_s* next;
 } list_elem_t;
 
+// TODO ajouter système de pointeur sur elem courant (pour parcourir avec list_foreach et faire un list_elem)
 // La structure de données pour représenter la liste
 typedef struct list_s {
     size_t size;
