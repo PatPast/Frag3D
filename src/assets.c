@@ -67,9 +67,9 @@ list_t* load_mtl_file(const char* file_path) {
             //initialisation du material
             current_material.name = strdup(buffer + 7); //copie le nom qui se trouve à coté
             current_material.diffuse_texture_name = NULL;
-            current_material.diffuse[0] = 0.0f;
-            current_material.diffuse[1] = 0.0f;
-            current_material.diffuse[2] = 0.0f;
+            current_material.diffuse.x = 0.0f;
+            current_material.diffuse.y = 0.0f;
+            current_material.diffuse.z = 0.0f;
             current_material.transparency = 1.0f;
         }
         //lire diffuse_texture_name
@@ -78,7 +78,7 @@ list_t* load_mtl_file(const char* file_path) {
         }
         //lire diffuse
         else if (strncmp(buffer, "Kd ", 3) == 0) {
-            sscanf(buffer + 3, "%f %f %f", &current_material.diffuse[0], &current_material.diffuse[1], &current_material.diffuse[2]);
+            sscanf(buffer + 3, "%f %f %f", &current_material.diffuse.x, &current_material.diffuse.y, &current_material.diffuse.z);
         }
         //lire transparency
         else if (strncmp(buffer, "d ", 2) == 0) {
@@ -148,12 +148,9 @@ objModelData_t* objModelData_load(const char* file_path){
     while (fgets(buffer, BUFFER_SIZE, obj_file)) {
 
         //place un marqueur de fin de chaine de caractère a la fin d'une ligne 
-        end = buffer + strlen(buffer) - 1;
-        while (end >= buffer && (*end == '\n' || *end == '\r')) {
-            *end = '\0';
-            end--;
-        }
+        buffer[strchar(buffer, '\n')] = '\0';
 
+        //ignorer les lignes vides et les commentaires
         if (buffer[0] == '\0' || buffer[0] == '#') {
             continue;
         }
@@ -210,12 +207,16 @@ void objModelData_destroy(objModelData_t** model){
 }
 
 
-scene_t* read_scene(const char* file_path){
+scene_t* scene_read_scene(const char* file_path){
 
     scene_t* scene = malloc(sizeof(scene_t));
+    
+    worldspawnEntry_t current_worldspawn;
+    propEntry_t current_prop;
+    pointLightInfo_t current_pointLightInfo;
+    directionalLightInfo_t current_directionalLightInfo;
 
     char buffer[BUFFER_SIZE]; //stocke la ligne courante
-    char* end; //pointe vers la fin de la ligne
 
     FILE* scene_file = fopen(file_path, "r");
     
@@ -225,99 +226,99 @@ scene_t* read_scene(const char* file_path){
         return scene;
     }
 
+    scene->worldspawn = list_init(sizeof(worldspawnEntry_t));
+    scene->props = list_init(sizeof(propEntry_t));
+    scene->point_light_info = list_init(sizeof(pointLightInfo_t));
+    scene->directional_light_info = list_init(sizeof(directionalLightInfo_t));
+
     while (fgets(buffer, BUFFER_SIZE, scene_file)) {
 
         //place un marqueur de fin de chaine de caractère a la fin d'une ligne 
-        end = buffer + strlen(buffer) - 1;
-        while (end >= buffer && (*end == '\n' || *end == '\r')) {
-            *end = '\0';
-            end--;
-        }
+        buffer[strchar(buffer, '\n')] = '\0'; 
 
+        //ignorer les lignes vides et les commentaires
         if (buffer[0] == '\0' || buffer[0] == '#') {
             continue;
         }
-        //TODO terminer la fonction
+
         if (strncmp(buffer, "@player_start", 13) == 0) {
-            fgets(buffer, BUFFER_SIZE, scene_file);
+            fgets(buffer, BUFFER_SIZE, scene_file); 
+            buffer[strchar(buffer, '\n')] = '\0';
             sscanf(buffer, "%f %f %f", &scene->player_start.x, &scene->player_start.y, &scene->player_start.z);
         }
         else if (strncmp(buffer, "@player_lookat", 14) == 0) {
             fgets(buffer, BUFFER_SIZE, scene_file);
+            buffer[strchar(buffer, '\n')] = '\0';
             sscanf(buffer, "%f %f %f", &scene->player_lookat.x, &scene->player_lookat.y, &scene->player_lookat.z);
         }
         else if (strncmp(buffer, "@worldspawn", 11) == 0) {
-            sscanf(buffer + 2, "%f %f %f", &current_position_data[0], &current_position_data[1], &current_position_data[2]);
-            list_add(model->position_data, (void*)current_position_data);
+            fgets(buffer, BUFFER_SIZE, scene_file);
+            buffer[strchar(buffer, '\n')] = '\0';
+            current_worldspawn.obj_name = malloc(sizeof(char) *(strlen(buffer) + 1) );
+            sscanf(buffer, "%s", current_worldspawn.obj_name);
+
+            fgets(buffer, BUFFER_SIZE, scene_file);
+            buffer[strchar(buffer, '\n')] = '\0';
+            sscanf(buffer, "%f %f %f", current_worldspawn.position.x, current_worldspawn.position.y, current_worldspawn.position.z);
+            
+            fgets(buffer, BUFFER_SIZE, scene_file);
+            buffer[strchar(buffer, '\n')] = '\0';
+            sscanf(buffer, "%f %f %f", current_worldspawn.rotation.x, current_worldspawn.rotation.y, current_worldspawn.rotation.z);
+
+            list_add(scene->worldspawn, (void*)&current_worldspawn);
+        }
+        else if (strncmp(buffer, "@prop", 5) == 0) {
+            fgets(buffer, BUFFER_SIZE, scene_file);
+            buffer[strchar(buffer, '\n')] = '\0';
+            current_prop.obj_name = malloc(sizeof(char) *(strlen(buffer) + 1) );
+            sscanf(buffer, "%s", current_prop.obj_name);
+
+            fgets(buffer, BUFFER_SIZE, scene_file);
+            buffer[strchar(buffer, '\n')] = '\0';
+            sscanf(buffer, "%f %f %f", current_prop.position.x, current_prop.position.y, current_prop.position.z);
+            
+            fgets(buffer, BUFFER_SIZE, scene_file);
+            buffer[strchar(buffer, '\n')] = '\0';
+            sscanf(buffer, "%f %f %f", current_prop.rotation.x, current_prop.rotation.y, current_prop.rotation.z);
+
+            list_add(scene->worldspawn, (void*)&current_prop);
+        }
+
+        else if (strncmp(buffer, "@point_light", 12) == 0) {
+            fgets(buffer, BUFFER_SIZE, scene_file);
+            buffer[strchar(buffer, '\n')] = '\0';
+            sscanf(buffer, "%f %f %f", current_pointLightInfo.position.x, current_pointLightInfo.position.y, current_pointLightInfo.position.z);
+            
+            fgets(buffer, BUFFER_SIZE, scene_file);
+            buffer[strchar(buffer, '\n')] = '\0';
+            sscanf(buffer, "%f %f %f", current_pointLightInfo.color.x, current_pointLightInfo.color.y, current_pointLightInfo.color.z);
+            
+            fgets(buffer, BUFFER_SIZE, scene_file);
+            buffer[strchar(buffer, '\n')] = '\0';
+            sscanf(buffer, "%f", current_pointLightInfo.intensity);
+            
+            fgets(buffer, BUFFER_SIZE, scene_file);
+            buffer[strchar(buffer, '\n')] = '\0';
+            sscanf(buffer, "%f", current_pointLightInfo.attenuation);
+
+            list_add(scene->worldspawn, (void*)&current_pointLightInfo);
+        }
+
+        else if (strncmp(buffer, "@directional_light", 17) == 0) {
+            fgets(buffer, BUFFER_SIZE, scene_file);
+            buffer[strchar(buffer, '\n')] = '\0';
+            sscanf(buffer, "%f %f %f", current_directionalLightInfo.position.x, current_directionalLightInfo.position.y, current_directionalLightInfo.position.z);
+            
+            fgets(buffer, BUFFER_SIZE, scene_file);
+            buffer[strchar(buffer, '\n')] = '\0';
+            sscanf(buffer, "%f %f %f", current_directionalLightInfo.color.x, current_directionalLightInfo.color.y, current_directionalLightInfo.color.z);
+
+            list_add(scene->worldspawn, (void*)&current_directionalLightInfo);
         }
         
     }
 
-    list_add(model->submodel_data, (void*)&current_submodel);
-
-    fclose(obj_file);
-
-    while (std::getline(stream, line)) {
-        if (line.find('#') == 0) {
-            continue;
-        }
-        if (line.find("@player_start") == 0) {
-            std::getline(stream, line);
-            scene.player_start = read_vec3(line, line_stream);
-        }
-        else if (line.find("@player_lookat") == 0) {
-            std::getline(stream, line);
-            scene.player_lookat = read_vec3(line, line_stream);
-        }
-        else if (line.find("@worldspawn") == 0) {
-            std::getline(stream, line);
-            std::string obj_name = read_string(line, line_stream);
-
-            std::getline(stream, line);
-            Vector3 pos = read_vec3(line, line_stream);
-
-            std::getline(stream, line);
-            Vector3 rot = read_vec3(line, line_stream);
-
-            scene.worldspawn.push_back({ obj_name, pos, rot });
-        }
-        else if (line.find("@prop") == 0) {
-            std::getline(stream, line);
-            std::string obj_name = read_string(line, line_stream);
-
-            std::getline(stream, line);
-            Vector3 pos = read_vec3(line, line_stream);
-
-            std::getline(stream, line);
-            Vector3 rot = read_vec3(line, line_stream);
-
-            scene.props.push_back({ obj_name, pos, rot });
-        }
-        else if (line.find("@point_light") == 0) {
-            std::getline(stream, line);
-            Vector3 pos = read_vec3(line, line_stream);
-
-            std::getline(stream, line);
-            Vector3 color = read_vec3(line, line_stream);
-
-            std::getline(stream, line);
-            float attenuation = read_float(line, line_stream);
-
-            std::getline(stream, line);
-            float intensity = read_float(line, line_stream);
-
-            scene.point_light_info.push_back({ pos, color, attenuation, intensity });
-        }
-        else if (line.find("@directional_light") == 0) {
-            std::getline(stream, line);
-            Vector3 pos = read_vec3(line, line_stream);
-
-            std::getline(stream, line);
-            Vector3 color = read_vec3(line, line_stream);
-
-            scene.directional_light_info = { pos, color };
-        }
-    }
+    fclose(scene_file);
 
     return scene;
 }

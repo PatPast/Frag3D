@@ -23,24 +23,24 @@ staticRenderUnit_t* staticRenderUnit_init(material_t* material, objSubmodelData_
         const float uv_scale = 0.1; // Makes the test environment look better
         objFaceData_t* face_data = (objFaceData_t*) face;
 
-        vector3_t obj_p0 = list_elem(obj_data->position_data, face_data->position_indices[0]); //creer la methode list_elem(list_t*, indice)
+        vector3_t obj_p0 = *(vector3_t*)list_elem(obj_data->position_data, face_data->position_indices[0]); //creer la methode list_elem(list_t*, indice)
         vector3_t p0 = vector3_add(vector3_rotate(obj_p0, rotation), position);
-        vector2_t uv0 = vector2_mult(list_elem(obj_data->uv_data, face_data->uv_indices[0]), uv_scale);
-        vector3_t obj_n0 = list_elem(obj_data->position_data, face_data->position_indices[0]);
+        vector2_t uv0 = vector2_mult(*(vector2_t*)list_elem(obj_data->uv_data, face_data->uv_indices[0]), uv_scale);
+        vector3_t obj_n0 = *(vector3_t*)list_elem(obj_data->position_data, face_data->position_indices[0]);
         vector3_t n0 = vector3_rotate(obj_n0, rotation);
         float v0[8] = { p0.x, p0.y, p0.z, uv0.x, uv0.y, n0.x, n0.y, n0.z };
 
-        vector3_t obj_p1 = list_elem(obj_data->position_data, face_data->position_indices[1]);
+        vector3_t obj_p1 = *(vector3_t*)list_elem(obj_data->position_data, face_data->position_indices[1]);
         vector3_t p1 = vector3_add(vector3_rotate(obj_p1, rotation), position);
-        vector2_t uv1 = vector2_mult(list_elem(obj_data->uv_data, face_data->uv_indices[1]), uv_scale);
-        vector3_t obj_n1 = list_elem(obj_data->position_data, face_data->position_indices[1]);
+        vector2_t uv1 = vector2_mult(*(vector2_t*)list_elem(obj_data->uv_data, face_data->uv_indices[1]), uv_scale);
+        vector3_t obj_n1 = *(vector3_t*)list_elem(obj_data->position_data, face_data->position_indices[1]);
         vector3_t n1 = vector3_rotate(obj_n1, rotation);
         float v1[8] = { p1.x, p1.y, p1.z, uv1.x, uv1.y, n1.x, n1.y, n1.z };
 
-        vector3_t obj_p2 = list_elem(obj_data->position_data, face_data->position_indices[2]); 
+        vector3_t obj_p2 = *(vector3_t*)list_elem(obj_data->position_data, face_data->position_indices[2]); 
         vector3_t p2 = vector3_add(vector3_rotate(obj_p2, rotation), position);
-        vector2_t uv2 = vector2_mult(list_elem(obj_data->uv_data, face_data->uv_indices[2]), uv_scale);
-        vector3_t obj_n2 = list_elem(obj_data->position_data, face_data->position_indices[2]);
+        vector2_t uv2 = vector2_mult(*(vector2_t*)list_elem(obj_data->uv_data, face_data->uv_indices[2]), uv_scale);
+        vector3_t obj_n2 = *(vector3_t*)list_elem(obj_data->position_data, face_data->position_indices[2]);
         vector3_t n2 = vector3_rotate(obj_n2, rotation);
         float v2[8] = { p2.x, p2.y, p2.z, uv2.x, uv2.y, n2.x, n2.y, n2.z };
 

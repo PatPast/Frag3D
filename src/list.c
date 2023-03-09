@@ -1,5 +1,3 @@
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <common.h>
@@ -48,6 +46,15 @@ list_t* list_duplicate(list_t* l) {
     return newlist;
 }
 //erreur au foreach sans raison
+
+void* list_elem(list_t* l, int indice){
+    if(l->size == 0) return NULL;
+    l->current = l->head;
+    for(int i = 0; i < indice; i++){
+        l->current = l->current->next;
+    }
+    return l->current->data;
+}
 
 // supprime les élements de la liste (attention aux fuites de mémoires)
 void list_clear(list_t* l) {

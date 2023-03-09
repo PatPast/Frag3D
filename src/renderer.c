@@ -120,11 +120,15 @@ renderer_t* renderer_init() {
 void renderer_register_scene(renderer_t* rdr, scene_t* scene) {
 
     list_foreach(entry,scene->worldspawn) {
-        renderer_register_static_obj(rdr, ((worldspawnEntry_t*)entry)->position, ((worldspawnEntry_t*)entry)->rotation);
+        (worldspawnEntry_t*) e = (worldspawnEntry_t*)entry;
+        const ObjModelData obj_data(entry.obj_name); // TODO convertir en c
+        renderer_register_static_obj(rdr, obj_data ,e->position, e->rotation);
     }
 
     list_foreach(entry,scene->props) {
-        renderer_register_static_obj(rdr, ((propEntry_t*)entry)->position, ((propEntry_t*)entry)->rotation);
+        (propEntry_t*) e = (propEntry_t*)entry;
+        const ObjModelData obj_data(entry.obj_name); // TODO convertir en c
+        renderer_register_static_obj(rdr, obj_data, e->position, e->rotation);
     }
 
     list_foreach(entry,scene->point_light_info) {
@@ -164,23 +168,23 @@ void renderer_register_point_light(renderer_t* rdr, pointLightInfo_t point_light
     char pos_prop_name[50];
     snprintf(pos_prop_name, 50, "u_point_lights[%s].position", index_str);
 
-    shader_set_vec3(rdr->world_shader, pos_prop_name, this->point_lights[index_to_add]->base_info.position);
+    shader_set_vec3(rdr->world_shader, pos_prop_name, rdr->point_lights[index_to_add]->base_info.position);
 
     char color_prop_name[50];
     snprintf(color_prop_name, 50, "u_point_lights[%s].color", index_str);
-    shader_set_vec3(rdr->world_shader, color_prop_name, this->point_lights[index_to_add]->base_info.color);
+    shader_set_vec3(rdr->world_shader, color_prop_name, rdr->point_lights[index_to_add]->base_info.color);
 
     char intensity_prop_name[50];
     snprintf(intensity_prop_name, 50, "u_point_lights[%s].intensity", index_str);
-    shader_set_float(rdr->world_shader, intensity_prop_name, this->point_lights[index_to_add]->base_info.intensity);
+    shader_set_float(rdr->world_shader, intensity_prop_name, rdr->point_lights[index_to_add]->base_info.intensity);
 
 
     char attenuation_prop_name[50];
     snprintf(intensity_prop_name, 50, "u_point_lights[%s].attenuation", index_str);
-    shader_set_float(rdr->world_shader, attenuation_prop_name, this->point_lights[index_to_add]->base_info.attenuation);
+    shader_set_float(rdr->world_shader, attenuation_prop_name, rdr->point_lights[index_to_add]->base_info.attenuation);
 }
 
-void Renderer::register_directional_light(const DirectionalLightInfo& directional_light_info) {
+void renderer_register_directional_light(const DirectionalLightInfo& directional_light_info) {
     this->directional_light = std::make_unique<DirectionalLight>(directional_light_info);
     shader_use(rdr->world_shader );
     shader_set_vec3(rdr->world_shader, "u_directional_light_dir", directional_light_info.position);
@@ -191,39 +195,42 @@ void Renderer::register_directional_light(const DirectionalLightInfo& directiona
 void renderer_render(renderer_t* rdr, matrix4_t player_view_matrix, float dt) {
     
     // TODO @CLEANUP: Probably gonna look different when we go through the other light paramters
-    for (auto& point_light : this->point_lights) {
-        const float intensity = point_light->wiggle_intensity(dt);
-
-        const std::string intensity_prop_name = "u_point_lights[" + std::to_string(point_light->index) + "].intensity";
+    list_foreach(point_light, rdr->point_lights) {
+        pointLight_t* pl = (pointLight_t*)point_light;
+        const float intensity = pointLight_wiggle_intensity(pl, dt);
+        
+        char intensity_prop_name[50];
+        snprintf(intensity_prop_name, 50, "u_point_lights[%d].intensity", pl->index);
         shader_use(rdr->world_shader);
-        rdr->world_shader->set_float(intensity_prop_name, intensity);
+        shader_set_float(rdr->world_shader, intensity_prop_name, intensity);
+
     }
     
     // Directional shadow
     glViewport(0, 0, point_shadowmap_size, point_shadowmap_size);
     glDisable(GL_CULL_FACE); // Write to depth buffer with all faces. Otherwise the backfaces won't cause shadows
-    glBindFramebuffer(GL_FRAMEBUFFER, this->directional_light->fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, rdr->directional_light->fbo);
     glClear(GL_DEPTH_BUFFER_BIT);
-    this->directional_light->shader->use();
-    for (auto& ru : this->render_units) {
-        ru->render();
+    shader_use(rdr->directional_light->shader);
+    list_foreach(ru, rdr->render_units) {
+        staticRenderUnit_render((staticRenderUnit_t*)ru);
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     // Point shadow
-    glBindFramebuffer(GL_FRAMEBUFFER, this->point_light_fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, rdr->point_light_fbo);
     glClear(GL_DEPTH_BUFFER_BIT);
-    for (auto& point_light : this->point_lights) {
-        point_light->shader->use();
-        for (auto& ru : this->render_units) {
-            ru->render();
+    list_foreach(point_light, rdr->point_lights) {
+        shader_use(((pointLight_t*)point_light)->shader);
+        list_foreach(ru, rdr->render_units) {
+            staticRenderUnit_render((staticRenderUnit_t*)ru);
         }
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glEnable(GL_CULL_FACE);
 
     // Draw to backbuffer
-    glBindFramebuffer(GL_FRAMEBUFFER, this->draw_fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, rdr->draw_fbo);
     shader_use(rdr->world_shader);
     shader_set_mat4(rdr->world_shader, "u_view", player_view_matrix);
     glViewport(0, 0, draw_framebuffer_size.x, draw_framebuffer_size.y);
@@ -231,30 +238,30 @@ void renderer_render(renderer_t* rdr, matrix4_t player_view_matrix, float dt) {
     shader_use(rdr->world_shader);
     shader_set_mat4(rdr->world_shader, "u_view", player_view_matrix);
     glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, this->directional_light->depth_tex_handle);
+    glBindTexture(GL_TEXTURE_2D, rdr->directional_light->depth_tex_handle);
     glActiveTexture(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, this->point_light_cubemap_handle);
-    for (auto& ru : this->render_units) {
-        ru->render();
+    glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, rdr->point_light_cubemap_handle);
+    list_foreach(ru, rdr->render_units) {
+        staticRenderUnit_render((staticRenderUnit_t*)ru);
     }
 
     // Skybox: fill fragments with depth == 1
-    this->skybox->shader->use();
+    shader_use(rdr->skybox->shader);
     glDepthFunc(GL_LEQUAL);
-    Matrix4 skybox_view = player_view_matrix;
+    matrix4_t skybox_view = player_view_matrix;
     skybox_view.data[3 * 4 + 0] = 0.0f; // Clear translation row
     skybox_view.data[3 * 4 + 1] = 0.0f;
     skybox_view.data[3 * 4 + 2] = 0.0f;
-    this->skybox->shader->set_mat4("u_view", skybox_view);
-    glBindVertexArray(this->skybox->vao);
+    shader_set_mat4(rdr->skybox->shader, "u_view", skybox_view);
+    glBindVertexArray(rdr->skybox->vao);
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, this->skybox->cubemap_handle);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, rdr->skybox->cubemap_handle);
     glDrawArrays(GL_TRIANGLES, 0, 36);
     glBindVertexArray(0);
     glDepthFunc(GL_LESS);
 
     // Blit to screen
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, this->draw_fbo);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, rdr->draw_fbo);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
     glBlitFramebuffer(0, 0, draw_framebuffer_size.x, draw_framebuffer_size.y, 0, 0, window_width, window_height,
         GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);

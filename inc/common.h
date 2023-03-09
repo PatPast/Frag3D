@@ -14,13 +14,13 @@ typedef struct list_elem_s {
     struct list_elem_s* next;
 } list_elem_t;
 
-// TODO ajouter système de pointeur sur elem courant (pour parcourir avec list_foreach et faire un list_elem)
 // La structure de données pour représenter la liste
 typedef struct list_s {
     size_t size;
     size_t data_size;
     list_elem_t* head;
     list_elem_t* tail;
+    list_elem_t* current;
 } list_t;
 
 // Initialise une nouvelle liste
@@ -30,13 +30,15 @@ list_t* list_init(size_t sizeElem);
 void list_add(list_t* l, void* data);
 
 // Parcourt la liste et applique des instructions à chaque élément
-#define list_foreach(__elem_data, list) \
-    void* __elem_data; \
-    for(list_elem_t* elem = list->head; elem != NULL; __elem_data = elem->data, elem = elem->next)
+#define list_foreach(data, list) \
+for(void* data, list->current = list->head; list->current != NULL; data = list->current->data, list->current = list->current->next)
 
 
 // Libère la mémoire utilisée par la liste
 void list_clear(list_t* l);
+
+// Retourne l'élément à l'indice donné 
+void* list_elem(list_t* l, int indice);
 
 /// FONCTIONS MATHS
 
@@ -99,6 +101,7 @@ typedef struct vector2_s {
     float x;
     float y;
 }vector2_t;
+vector2_t vector2_mult(vector2_t v, float f);
 typedef struct vector2i_s {
     int x;
     int y;

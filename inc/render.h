@@ -71,7 +71,8 @@ typedef struct pointLight_s {
 
 pointLight_t* pointLight_init(pointLightInfo_t point_light_info, int light_index);
 void pointLight_destroy(pointLight_t ** pl);
-float wiggle_intensity(float dt);
+float pointLight_wiggle_intensity(pointLight_t* pl, float dt);
+//TODO remplir la fonction ci dessus
 
 
 typedef struct skybox_s {
