@@ -1,0 +1,40 @@
+newmtl Wall2
+map_Kd Wall1.png
+Kd  1.0 1.0 1.0
+d  1.0
+
+newmtl Soil3
+map_Kd Soil3.png
+Kd  1.0 1.0 1.0
+d  1.0
+
+newmtl Stone4
+map_Kd Stone4.png
+Kd  1.0 1.0 1.0
+d  1.0
+
+newmtl Stone3
+map_Kd Stone3.png
+Kd  1.0 1.0 1.0
+d  1.0
+
+newmtl Stone1
+map_Kd Stone1.png
+Kd  1.0 1.0 1.0
+d  1.0
+
+newmtl Metal1
+map_Kd Metal1.png
+Kd  1.0 1.0 1.0
+d  1.0
+
+newmtl Stone2
+map_Kd Stone2.png
+Kd  1.0 1.0 1.0
+d  1.0
+
+newmtl Wall4
+map_Kd Wall4.png
+Kd  1.0 1.0 1.0
+d  1.0
+

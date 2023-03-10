@@ -78,8 +78,8 @@ staticRenderUnit_t* staticRenderUnit_init(material_t* material, objSubmodelData_
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sru->index_data_length * sizeof(int), index_data, GL_STATIC_DRAW);
 
     sru->tex_handle = 0;
-    if (!material->diffuse_texture_name != NULL) { //et != de \0
-        char* image_path[512] = "assets/textures/";
+    if (material->diffuse_texture_name != NULL) { //et != de \0
+        char image_path[512] = "assets/textures/";
         strcat(image_path, material->diffuse_texture_name);
 
         image =  image_init(image_path);
@@ -105,14 +105,19 @@ void staticRenderUnit_render(staticRenderUnit_t* sru){
     glDrawElements(GL_TRIANGLES, (GLsizei)sru->index_data_length, GL_UNSIGNED_INT, NULL);
 }
 
+void staticRenderUnit_freealloc(staticRenderUnit_t* sru) {
+    glDeleteTextures(1, &(sru->tex_handle));
+    glDeleteVertexArrays(1, &(sru->vao));
+    glDeleteBuffers(1, &(sru->vbo));
+    glDeleteBuffers(1, &(sru->ibo));
+}
 void staticRenderUnit_destroy(staticRenderUnit_t** sru) {
-    glDeleteVertexArrays(1, &((*sru)->vao));
-    glDeleteBuffers(1, &((*sru)->vbo));
-    glDeleteBuffers(1, &((*sru)->ibo));
+    staticRenderUnit_freealloc(*sru);
     free(*sru);
     *sru = NULL;
 }
 
+//TODO etre sur que ca marche
 image_t* image_init(char* file_path) {
     image_t* img = malloc(sizeof(image_t));    
     SDL_Surface* data = IMG_Load(file_path);
@@ -123,9 +128,10 @@ image_t* image_init(char* file_path) {
     if (img->image_data == NULL) {
         printf("Couldn't load the image at: %s\n", file_path);
     }
-    SDL_FreeSurface(img);
+    SDL_FreeSurface(data);
     return img;
 }
+
 void image_freealloc(image_t* img){ //modifier dans le render.h (ou supprimer)
     free(img->image_data);
 }

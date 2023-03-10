@@ -30,8 +30,9 @@ list_t* list_init(size_t sizeElem);
 void list_add(list_t* l, void* data);
 
 // Parcourt la liste et applique des instructions à chaque élément
-#define list_foreach(data, list) \
-for(void* data, list->current = list->head; list->current != NULL; data = list->current->data, list->current = list->current->next)
+#define list_foreach(d, list) \
+    void* d; \
+    for(list->current = list->head; list->current != NULL; d = list->current->data, list->current = list->current->next)
 
 
 // Libère la mémoire utilisée par la liste
@@ -42,7 +43,9 @@ void* list_elem(list_t* l, int indice);
 
 /// FONCTIONS MATHS
 
-
+inline float lerp(float a, float b, float t) {
+    return a + (b - a) * t;
+}
 
 typedef struct vector3_s {
     float x;

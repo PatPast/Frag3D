@@ -20,6 +20,8 @@ typedef struct shader_s {
 }shader_t;
 
 shader_t shader_init(char* file_path);
+void shader_freealloc(shader_t sh);
+void shader_destroy(shader_t* sh);
 void shader_set_int(shader_t sh, char* property_name, int i);
 void shader_set_vec3(shader_t sh, char* property_name, vector3_t v);
 void shader_set_mat4(shader_t sh, char* property_name, matrix4_t m);
@@ -32,8 +34,9 @@ typedef struct image_s {
     unsigned char* image_data;
 }image_t;
 
-image_t* image_init(char* file_path, int flip_vertical);
-void image_freealloc(image_t im);
+image_t* image_init(char* file_path);
+void image_freealloc(image_t* img);
+void image_destroy(image_t** img);
 
 
 typedef struct staticRenderUnit_s {
@@ -47,6 +50,9 @@ typedef struct staticRenderUnit_s {
 
 staticRenderUnit_t* staticRenderUnit_init(material_t* material, objSubmodelData_t* obj_submodel_data, objModelData_t* obj_data,
     vector3_t position, vector3_t rotation);
+void staticRenderUnit_freealloc(staticRenderUnit_t* sru);
+void staticRenderUnit_destroy(staticRenderUnit_t** sru);
+
 void render();
 
 typedef struct directionalLight_s {
@@ -58,6 +64,7 @@ typedef struct directionalLight_s {
 }directionalLight_t;
 
 directionalLight_t* directionalLight_init(directionalLightInfo_t info);
+void directionalLight_destroy(directionalLight_t** dl);
 
 typedef struct pointLight_s {
     pointLightInfo_t base_info;
@@ -70,9 +77,10 @@ typedef struct pointLight_s {
 
 
 pointLight_t* pointLight_init(pointLightInfo_t point_light_info, int light_index);
+void pointLight_freealloc(pointLight_t* pl);
 void pointLight_destroy(pointLight_t ** pl);
 float pointLight_wiggle_intensity(pointLight_t* pl, float dt);
-//TODO remplir la fonction ci dessus
+
 
 
 typedef struct skybox_s {

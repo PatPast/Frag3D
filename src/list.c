@@ -9,6 +9,7 @@ list_t* list_init(size_t data_size) {
     l->size = 0;
     l->data_size = data_size;
     l->head = NULL;
+    l->current = NULL;
     l->tail = NULL;
     return l;
 }

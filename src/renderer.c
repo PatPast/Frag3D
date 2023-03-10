@@ -2,8 +2,10 @@
 #include <common.h>
 #include <render.h>
 #include <string.h>
+#include <assets.h>
 //#include "render_debug.h"
-#include "../config.h"
+#include <config.h>
+
 
 size_t point_shadowmap_size = 1024;
 size_t directional_shadowmap_size = 2048;
@@ -12,29 +14,13 @@ float far_plane = 1000.0f;
 float shadow_near_plane = 0.001f;
 float shadow_far_plane = 1000.0f;
 vector2i_t draw_framebuffer_size = {640, 360};
-int window_width = 1080;
-int window_height = 720;
+int window_width = 1080; //TODO
+int window_height = 720; //les mettre dans un fichier de config en static
 int max_point_light_count = 10; // TODO @CLEANUP: We have the same define in the world shader
 
 
 #define aspect_ratio ((float)window_width / (float)window_height)
 #define MATRIX4_PERSPECTIVE matrix4_perspective(45.0f, aspect_ratio, near_plane, far_plane)
-
-pointLight_t* pointLight_init(pointLightInfo_t point_light_info, int light_index){
-    pointLight_t* pl = malloc(sizeof(pointLight_t));
-    pl->base_info = point_light_info;
-    pl->current_info = point_light_info;
-    pl->index = light_index;
-    return pl;
-}
-
-void pointLight_destroy(pointLight_t ** pl){
-    free(*pl);
-    *pl = NULL; 
-}
-
-
-
 
 
 void create_draw_fbo(buffer_handle_t draw_fbo, tex_handle_t draw_tex_handle, buffer_handle_t draw_rbo) {
@@ -71,7 +57,7 @@ void create_point_light_cubemap_and_fbo(tex_handle_t cubemap_handle, buffer_hand
         6 * point_light_count, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
     glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, 0);
 
-    check_gl_error("point_light_cubemap");
+    check_gl_error("point_light_cubemap"); //TODO verifier si necessaire
 
     glGenFramebuffers(1, fbo);
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
@@ -97,8 +83,8 @@ renderer_t* renderer_init() {
 
     rdr = malloc(sizeof(renderer_t));
 
-    create_draw_fbo(this->draw_fbo, this->draw_tex_handle, this->draw_rbo);
-    create_point_light_cubemap_and_fbo(this->point_light_cubemap_handle, this->point_light_fbo, max_point_light_count);
+    create_draw_fbo(rdr->draw_fbo, rdr->draw_tex_handle, rdr->draw_rbo);
+    create_point_light_cubemap_and_fbo(rdr->point_light_cubemap_handle, rdr->point_light_fbo, max_point_light_count);
 
     rdr->world_shader = shader_init("src/render/shader/world.glsl");
     shader_use(rdr->world_shader);
@@ -120,19 +106,21 @@ renderer_t* renderer_init() {
 void renderer_register_scene(renderer_t* rdr, scene_t* scene) {
 
     list_foreach(entry,scene->worldspawn) {
-        (worldspawnEntry_t*) e = (worldspawnEntry_t*)entry;
-        const ObjModelData obj_data(entry.obj_name); // TODO convertir en c
+        worldspawnEntry_t* e = (worldspawnEntry_t*)entry;
+        objModelData_t* obj_data = objModelData_load(e->obj_name); // TODO convertir en c
         renderer_register_static_obj(rdr, obj_data ,e->position, e->rotation);
+        objModelData_destroy(&obj_data);
     }
 
     list_foreach(entry,scene->props) {
-        (propEntry_t*) e = (propEntry_t*)entry;
-        const ObjModelData obj_data(entry.obj_name); // TODO convertir en c
+        propEntry_t* e = (propEntry_t*)entry;
+        objModelData_t* obj_data = objModelData_load(e->obj_name); // TODO convertir en c
         renderer_register_static_obj(rdr, obj_data, e->position, e->rotation);
+        objModelData_destroy(&obj_data);
     }
 
     list_foreach(entry,scene->point_light_info) {
-        renderer_register_point_light((pointLightInfo_t*)entry);
+        renderer_register_point_light(rdr, *(pointLightInfo_t*)entry);
     }
 
     register_directional_light(rdr, scene->directional_light_info);
@@ -155,6 +143,7 @@ void renderer_register_static_obj(renderer_t* rdr, objModelData_t* obj_data, vec
 void renderer_register_point_light(renderer_t* rdr, pointLightInfo_t point_light_info) {
     const int index_to_add = (int)(rdr->point_lights->size);
     pointLight_t* light = pointLight_init(point_light_info, index_to_add);
+    pointLight_t* pl_at_index_to_add = (pointLight_t*)list_elem(rdr->point_lights, index_to_add); //le pointLight à la position 'index_to_add' de rdr->point_lights
 
     list_add(rdr->point_lights, light);
     free(light);
@@ -168,28 +157,28 @@ void renderer_register_point_light(renderer_t* rdr, pointLightInfo_t point_light
     char pos_prop_name[50];
     snprintf(pos_prop_name, 50, "u_point_lights[%s].position", index_str);
 
-    shader_set_vec3(rdr->world_shader, pos_prop_name, rdr->point_lights[index_to_add]->base_info.position);
+    shader_set_vec3(rdr->world_shader, pos_prop_name, pl_at_index_to_add->base_info.position);
 
     char color_prop_name[50];
     snprintf(color_prop_name, 50, "u_point_lights[%s].color", index_str);
-    shader_set_vec3(rdr->world_shader, color_prop_name, rdr->point_lights[index_to_add]->base_info.color);
+    shader_set_vec3(rdr->world_shader, color_prop_name, pl_at_index_to_add->base_info.color);
 
     char intensity_prop_name[50];
     snprintf(intensity_prop_name, 50, "u_point_lights[%s].intensity", index_str);
-    shader_set_float(rdr->world_shader, intensity_prop_name, rdr->point_lights[index_to_add]->base_info.intensity);
+    shader_set_float(rdr->world_shader, intensity_prop_name, pl_at_index_to_add->base_info.intensity);
 
 
     char attenuation_prop_name[50];
     snprintf(intensity_prop_name, 50, "u_point_lights[%s].attenuation", index_str);
-    shader_set_float(rdr->world_shader, attenuation_prop_name, rdr->point_lights[index_to_add]->base_info.attenuation);
+    shader_set_float(rdr->world_shader, attenuation_prop_name, pl_at_index_to_add->base_info.attenuation);
 }
 
-void renderer_register_directional_light(const DirectionalLightInfo& directional_light_info) {
-    this->directional_light = std::make_unique<DirectionalLight>(directional_light_info);
+void renderer_register_directional_light(renderer_t* rdr, directionalLightInfo_t directional_light_info) {
+    rdr->directional_light = directionalLight_init(directional_light_info);
     shader_use(rdr->world_shader );
     shader_set_vec3(rdr->world_shader, "u_directional_light_dir", directional_light_info.position);
     shader_set_vec3(rdr->world_shader, "u_directional_light_color", directional_light_info.color);
-    shader_set_mat4(rdr->world_shader, "u_directional_light_vp", this->directional_light->view_proj);
+    shader_set_mat4(rdr->world_shader, "u_directional_light_vp", rdr->directional_light->view_proj);
 }
 
 void renderer_render(renderer_t* rdr, matrix4_t player_view_matrix, float dt) {
@@ -268,18 +257,27 @@ void renderer_render(renderer_t* rdr, matrix4_t player_view_matrix, float dt) {
 }
 
 void renderer_freealloc(renderer_t* rdr){
+    glDeleteTextures(1, rdr->point_light_cubemap_handle);
+    glDeleteFramebuffers(1, rdr->point_light_fbo);
+
+    glDeleteTextures(1, rdr->draw_tex_handle);
+    glDeleteFramebuffers(1, rdr->draw_fbo);
+    glDeleteRenderbuffers(1, rdr->draw_rbo);
+
+    //TODO a modifier
+    directionalLight_destroy(&rdr->directional_light);
+    skybox_destroy(&rdr->skybox);
+    list_foreach(ru,rdr->render_units){
+        staticRenderUnit_freealloc((staticRenderUnit_t*)ru);
+    }
     list_destroy(&rdr->render_units);
+    list_foreach(pl,rdr->point_lights){
+        pointLight_freealloc((pointLight_t*)pl);
+    }
     list_destroy(&rdr->point_lights);
 }
 
 void renderer_destroy(renderer_t** rdr) {
-    glDeleteTextures(1, (*rdr)->point_light_cubemap_handle);
-    glDeleteFramebuffers(1, (*rdr)->point_light_fbo);
-
-    glDeleteTextures(1, (*rdr)->draw_tex_handle);
-    glDeleteFramebuffers(1, (*rdr)->draw_fbo);
-    glDeleteRenderbuffers(1, (*rdr)->draw_rbo);
-
     renderer_freealloc(*rdr);
     free(*rdr);
     *rdr = NULL;

@@ -79,6 +79,6 @@ typedef struct scene_s {
     list_t* directional_light_info; //pointLightInfo_t
 }scene_t;
 
-scene_t scene_read_scene(const char* file_path);
+scene_t* scene_read_scene(char* file_path);
 
 #endif

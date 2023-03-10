@@ -1,0 +1,10 @@
+newmtl ProBuilderDefault
+map_Kd GridBox_Default.png
+Kd 1 1 1
+d 1
+
+newmtl Metal3
+map_Kd Metal3.png
+Kd 1.0 1.0 1.0
+d 1.0
+

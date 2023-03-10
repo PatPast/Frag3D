@@ -1,0 +1,23 @@
+@player_start
+0 0 0
+
+@worldspawn
+assets/models/test_lighting.obj
+0 0 0
+0 0 0
+
+@point_light
+24.0 2.0 -3.0
+1.0 0.0 0.0
+8.0
+0.25
+
+@point_light
+3.0 3.0 50.0
+1.0 1.0 1.0
+8.0
+0.25
+
+@directional_light
+55.0 55.0 -50.0
+1.0 0.8 0.7

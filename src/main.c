@@ -1,5 +1,7 @@
 #include <SDL2/SDL.h>
 #include <glad/glad.h>
+#include <stdlib.h>
+#include <time.h>
 #include <math.h>
 #include <common.h>
 
@@ -11,15 +13,17 @@ int main(int argc, char *argv[])
 	SDL_Init(SDL_INIT_VIDEO);
 
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5);
 	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+
+	srand(time(NULL)); 
 
 	SDL_Window* window = SDL_CreateWindow("OpenGL", 100, 100, 800, 800, SDL_WINDOW_OPENGL);
 	SDL_GLContext context = SDL_GL_CreateContext(window);
 
 	//Load GLAD so it configures OpenGL
-		gladLoadGL();
+	gladLoadGL();
 
 	SDL_Event event;
 	while (1)
