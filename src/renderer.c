@@ -1,11 +1,6 @@
 #include <glad/glad.h>
-#include <stdlib.h>
-#include <common.h>
 #include <render.h>
 #include <render_debug.h>
-#include <string.h>
-#include <assets.h>
-//#include "render_debug.h"
 #include <config.h>
 
 

@@ -1,7 +1,6 @@
+#include <glad/glad.h>
 #include <render.h>
 #include <render_debug.h>
-#include <stdlib.h>
-#include <common.h>
 
 
 size_t point_shadowmap_size = 1024;

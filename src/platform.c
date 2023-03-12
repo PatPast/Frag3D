@@ -1,9 +1,9 @@
 #include <platform.h>
-#include <common.h>
 #include <SDL2/SDL.h>
 #include <glad/glad.h>
 #include <time.h>
 #include <config.h>
+#include <vector3.h>
 
 int window_width = 1080; //TODO
 int window_height = 720; //les mettre dans un fichier de config en static

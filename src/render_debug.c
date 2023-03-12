@@ -1,3 +1,6 @@
+
+#include <glad/glad.h>
+#include <stdio.h>
 #include <render_debug.h>
 
 void check_gl_error(char* tag) {

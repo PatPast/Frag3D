@@ -1,7 +1,4 @@
-#include <common.h>
 #include <geom.h>
-#include <world.h>
-#include <vector3.h>
 #include <stdio.h>
 #include <stdlib.h>
 

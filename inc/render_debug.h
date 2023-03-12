@@ -2,9 +2,6 @@
 #define _RENDER_DEBUG_H_
 //#define _DEBUG
 
-#include <glad/glad.h>
-#include <stdio.h>
-
 void check_gl_error(char* tag);
 void check_gl_framebuffer_complete(char* tag);
 

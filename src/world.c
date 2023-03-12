@@ -1,6 +1,4 @@
 #include <world.h>
-#include <assets.h>
-#include <common.h>
 
 void playerShape_displace(playerShape_t* ps, vector3_t displacement) {
     ps->mid_point = vector3_add(ps->mid_point, displacement);

@@ -1,8 +1,6 @@
 #ifndef _GEOM_H_
 #define _GEOM_H_
 
-#include <vector3.h>
-#include <stdlib.h>
 #include <world.h>
 
 /// GEOMETRY

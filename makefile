@@ -18,7 +18,7 @@ PROG=Frag3D
 
 all: ${BIN_DIR}/${PROG} 
 
-${BIN_DIR}/${PROG}: ${SRC_DIR}/main.c ${SRC_DIR}/glad.c
+${BIN_DIR}/${PROG}: ${SRC_DIR}/*.c 
 	${CC} -o $@ $^ ${LIBS} ${INCS} ${FLAGS}
 
 clean:

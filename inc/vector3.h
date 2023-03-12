@@ -1,6 +1,8 @@
 #ifndef _VECTOR3_H_
 #define _VECTOR3_H_
 
+#include <string.h> //TODO include ou pas
+
 typedef struct vector3_s {
     float x;
     float y;

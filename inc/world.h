@@ -2,10 +2,11 @@
 #define _WORLD_H_
 
 #include <common.h>
-#include <vector3.h>
-#include <list.h>
-#include <platform.h>
 #include <assets.h>
+#include <vector3.h>
+#include <platform.h>
+
+
 
 typedef struct triangle_s {
     vector3_t p0;

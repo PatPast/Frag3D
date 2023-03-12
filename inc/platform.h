@@ -1,7 +1,9 @@
 #ifndef _RENDER_DEBUG_H_
 #define _RENDER_DEBUG_H_
 
-#include <SDL2/SDL.h>
+
+#include <SDL2/SDL.h> // TODO à checker si juste pas faire des prototype de struct comme "struct GLFWwindow;"
+#include <list.h>
 #include <vector3.h>
 
 #define NB_KEYCODE 13

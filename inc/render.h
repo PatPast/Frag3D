@@ -1,12 +1,11 @@
 #ifndef _RENDER_H_
 #define _RENDER_H_
 
-#include <glad/glad.h>
 #include <stdio.h>
 #include <stdlib.h>
-
 #include <string.h>
 #include <assets.h>
+#include <vector3.h>
 #include <common.h>
 
 

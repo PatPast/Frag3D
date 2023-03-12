@@ -3,7 +3,7 @@
 #include <glad/glad.h>
 #include <render.h>
 #include <render_debug.h>
-//#include "render_debug.h"
+
 #define BUFFER_SIZE 512
 
 shader_handle_t invalid_shader = 0;

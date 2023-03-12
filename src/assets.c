@@ -1,9 +1,7 @@
+#include <assets.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <assets.h>
-#include <list.h>
-#include <common.h>
 #define BUFFER_SIZE 1024
 
 void material_freealloc(material_t* material){

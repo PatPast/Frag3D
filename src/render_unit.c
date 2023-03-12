@@ -1,10 +1,8 @@
 
 #include <SDL2/SDL_image.h>
-
 #include <glad/glad.h>
-#include <common.h>
 #include <stdio.h>
-#include "render.h"
+#include <render.h>
 
 staticRenderUnit_t* staticRenderUnit_init(material_t* material, objSubmodelData_t* obj_submodel_data, objModelData_t* obj_data,
     vector3_t position, vector3_t rotation) {

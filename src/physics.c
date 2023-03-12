@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include <geom.h>
-#include  <vector3.h>
 #include <world.h>
-#include <common.h>
 
 float player_height = 2.0f; //Todo à mettre dans config
 float player_radius = 0.5f;

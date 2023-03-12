@@ -1,5 +1,7 @@
-#include <common.h>
 #include <vector3.h>
+#include <math.h>
+
+
 #define DEG_TO_RAD 0.0174532925199433
 
 vector3_t vector3_init(float x, float y, float z){
