@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <glad/glad.h>
 #include <render.h>
+#include <render_debug.h>
 //#include "render_debug.h"
 #define BUFFER_SIZE 512
 
@@ -31,7 +32,7 @@ shader_handle_t load_shader(char* header, char* program_string, int shader_type)
     strcat(shader_string, program_string);
 
     const shader_handle_t shader_id = glCreateShader(shader_type);
-    glShaderSource(shader_id, 1, &shader_string, NULL);
+    glShaderSource(shader_id, 1, (const GLchar**)&shader_string, NULL);
     glCompileShader(shader_id);
 
     // Check for compile errors

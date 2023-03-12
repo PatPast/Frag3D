@@ -1,4 +1,5 @@
 #include <common.h>
+#include <vector3.h>
 #define DEG_TO_RAD 0.0174532925199433
 
 vector3_t vector3_init(float x, float y, float z){
@@ -192,6 +193,10 @@ matrix4_t matrix4_ortho(float left, float right, float bottom, float top, float 
     return m;
 }
 
+vector2_t vector2_init(float x, float y){
+    vector2_t v = {x, y};
+    return v;
+}
 vector2_t vector2_mult(vector2_t v, float f){
     v.x *= f;
     v.y *= f;

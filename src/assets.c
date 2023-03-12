@@ -1,6 +1,9 @@
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <assets.h>
+#include <list.h>
+#include <common.h>
 #define BUFFER_SIZE 1024
 
 void material_freealloc(material_t* material){
@@ -48,7 +51,7 @@ list_t* load_mtl_file(const char* file_path) {
     while (fgets(buffer, BUFFER_SIZE, mtl_file)) {
 
         //place un marqueur de fin de chaine de caractère a la fin d'une ligne 
-        buffer[strchar(buffer, '\n')] = '\0';
+        buffer[(int)(strchr(buffer, '\n') - buffer)] = '\0';
 
         //passe la ligne si elle est vide ou est un commentaire
         if (buffer[0] == '\0' || buffer[0] == '#') {
@@ -143,7 +146,7 @@ objModelData_t* objModelData_load(const char* file_path){
     while (fgets(buffer, BUFFER_SIZE, obj_file)) {
 
         //place un marqueur de fin de chaine de caractère a la fin d'une ligne 
-        buffer[strchar(buffer, '\n')] = '\0';
+        buffer[(int)(strchr(buffer, '\n') - buffer)] = '\0';
 
         //ignorer les lignes vides et les commentaires
         if (buffer[0] == '\0' || buffer[0] == '#') {
@@ -224,12 +227,13 @@ scene_t* scene_read_scene(char* file_path){
     scene->worldspawn = list_init(sizeof(worldspawnEntry_t));
     scene->props = list_init(sizeof(propEntry_t));
     scene->point_light_info = list_init(sizeof(pointLightInfo_t));
-    scene->directional_light_info = list_init(sizeof(directionalLightInfo_t));
 
     while (fgets(buffer, BUFFER_SIZE, scene_file)) {
 
         //place un marqueur de fin de chaine de caractère a la fin d'une ligne 
-        buffer[strchar(buffer, '\n')] = '\0'; 
+        buffer[(int)(strchr(buffer, '\n') - buffer)] = '\0'; 
+        
+        
 
         //ignorer les lignes vides et les commentaires
         if (buffer[0] == '\0' || buffer[0] == '#') {
@@ -238,42 +242,42 @@ scene_t* scene_read_scene(char* file_path){
 
         if (strncmp(buffer, "@player_start", 13) == 0) {
             fgets(buffer, BUFFER_SIZE, scene_file); 
-            buffer[strchar(buffer, '\n')] = '\0';
+            buffer[(int)(strchr(buffer, '\n') - buffer)] = '\0';
             sscanf(buffer, "%f %f %f", &scene->player_start.x, &scene->player_start.y, &scene->player_start.z);
         }
         else if (strncmp(buffer, "@player_lookat", 14) == 0) {
             fgets(buffer, BUFFER_SIZE, scene_file);
-            buffer[strchar(buffer, '\n')] = '\0';
+            buffer[(int)(strchr(buffer, '\n') - buffer)] = '\0';
             sscanf(buffer, "%f %f %f", &scene->player_lookat.x, &scene->player_lookat.y, &scene->player_lookat.z);
         }
         else if (strncmp(buffer, "@worldspawn", 11) == 0) {
             fgets(buffer, BUFFER_SIZE, scene_file);
-            buffer[strchar(buffer, '\n')] = '\0';
+            buffer[(int)(strchr(buffer, '\n') - buffer)] = '\0';
             current_worldspawn.obj_name = malloc(sizeof(char) *(strlen(buffer) + 1) );
             sscanf(buffer, "%s", current_worldspawn.obj_name);
 
             fgets(buffer, BUFFER_SIZE, scene_file);
-            buffer[strchar(buffer, '\n')] = '\0';
+            buffer[(int)(strchr(buffer, '\n') - buffer)] = '\0';
             sscanf(buffer, "%f %f %f", &current_worldspawn.position.x, &current_worldspawn.position.y, &current_worldspawn.position.z);
             
             fgets(buffer, BUFFER_SIZE, scene_file);
-            buffer[strchar(buffer, '\n')] = '\0';
+            buffer[(int)(strchr(buffer, '\n') - buffer)] = '\0';
             sscanf(buffer, "%f %f %f", &current_worldspawn.rotation.x, &current_worldspawn.rotation.y, &current_worldspawn.rotation.z);
 
             list_add(scene->worldspawn, (void*)&current_worldspawn);
         }
         else if (strncmp(buffer, "@prop", 5) == 0) {
             fgets(buffer, BUFFER_SIZE, scene_file);
-            buffer[strchar(buffer, '\n')] = '\0';
+            buffer[(int)(strchr(buffer, '\n') - buffer)] = '\0';
             current_prop.obj_name = malloc(sizeof(char) *(strlen(buffer) + 1) );
             sscanf(buffer, "%s", current_prop.obj_name);
 
             fgets(buffer, BUFFER_SIZE, scene_file);
-            buffer[strchar(buffer, '\n')] = '\0';
+            buffer[(int)(strchr(buffer, '\n') - buffer)] = '\0';
             sscanf(buffer, "%f %f %f", &current_prop.position.x, &current_prop.position.y, &current_prop.position.z);
             
             fgets(buffer, BUFFER_SIZE, scene_file);
-            buffer[strchar(buffer, '\n')] = '\0';
+            buffer[(int)(strchr(buffer, '\n') - buffer)] = '\0';
             sscanf(buffer, "%f %f %f", &current_prop.rotation.x, &current_prop.rotation.y, &current_prop.rotation.z);
 
             list_add(scene->worldspawn, (void*)&current_prop);
@@ -281,19 +285,19 @@ scene_t* scene_read_scene(char* file_path){
 
         else if (strncmp(buffer, "@point_light", 12) == 0) {
             fgets(buffer, BUFFER_SIZE, scene_file);
-            buffer[strchar(buffer, '\n')] = '\0';
+            buffer[(int)(strchr(buffer, '\n') - buffer)] = '\0';
             sscanf(buffer, "%f %f %f", &current_pointLightInfo.position.x, &current_pointLightInfo.position.y, &current_pointLightInfo.position.z);
             
             fgets(buffer, BUFFER_SIZE, scene_file);
-            buffer[strchar(buffer, '\n')] = '\0';
+            buffer[(int)(strchr(buffer, '\n') - buffer)] = '\0';
             sscanf(buffer, "%f %f %f", &current_pointLightInfo.color.x, &current_pointLightInfo.color.y, &current_pointLightInfo.color.z);
             
             fgets(buffer, BUFFER_SIZE, scene_file);
-            buffer[strchar(buffer, '\n')] = '\0';
+            buffer[(int)(strchr(buffer, '\n') - buffer)] = '\0';
             sscanf(buffer, "%f", &current_pointLightInfo.intensity);
             
             fgets(buffer, BUFFER_SIZE, scene_file);
-            buffer[strchar(buffer, '\n')] = '\0';
+            buffer[(int)(strchr(buffer, '\n') - buffer)] = '\0';
             sscanf(buffer, "%f", &current_pointLightInfo.attenuation);
 
             list_add(scene->worldspawn, (void*)&current_pointLightInfo);
@@ -301,14 +305,14 @@ scene_t* scene_read_scene(char* file_path){
 
         else if (strncmp(buffer, "@directional_light", 17) == 0) {
             fgets(buffer, BUFFER_SIZE, scene_file);
-            buffer[strchar(buffer, '\n')] = '\0';
+            buffer[(int)(strchr(buffer, '\n') - buffer)] = '\0';
             sscanf(buffer, "%f %f %f", &current_directionalLightInfo.position.x, &current_directionalLightInfo.position.y, &current_directionalLightInfo.position.z);
             
             fgets(buffer, BUFFER_SIZE, scene_file);
-            buffer[strchar(buffer, '\n')] = '\0';
+            buffer[(int)(strchr(buffer, '\n') - buffer)] = '\0';
             sscanf(buffer, "%f %f %f", &current_directionalLightInfo.color.x, &current_directionalLightInfo.color.y, &current_directionalLightInfo.color.z);
 
-            list_add(scene->worldspawn, (void*)&current_directionalLightInfo);
+            scene->directional_light_info = current_directionalLightInfo;
         }
         
     }
@@ -316,4 +320,27 @@ scene_t* scene_read_scene(char* file_path){
     fclose(scene_file);
 
     return scene;
+}
+
+void scene_destroy(scene_t** scene){
+    list_foreach(worldspawn,(*scene)->worldspawn){
+        worldspawnEntry_freealloc((worldspawnEntry_t*)worldspawn);
+    }
+    list_foreach(props,(*scene)->props){
+        propEntry_freealloc((propEntry_t*)props);
+    }
+    list_destroy(&(*scene)->worldspawn);
+    list_destroy(&(*scene)->props);
+    list_destroy(&(*scene)->point_light_info);
+    free(*scene);
+    *scene = NULL;
+
+}
+
+void worldspawnEntry_freealloc(worldspawnEntry_t* entry){
+    free(entry->obj_name);
+}
+
+void propEntry_freealloc(propEntry_t* entry){
+    free(entry->obj_name);
 }

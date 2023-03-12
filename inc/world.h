@@ -1,10 +1,13 @@
-#pragma once
+#ifndef _WORLD_H_
+#define _WORLD_H_
 
 #include <common.h>
+#include <vector3.h>
+#include <list.h>
 #include <platform.h>
 #include <assets.h>
 
-struct triangle_s {
+typedef struct triangle_s {
     vector3_t p0;
     vector3_t p1;
     vector3_t p2;
@@ -19,71 +22,79 @@ triangle_t triangle_init(vector3_t p0,vector3_t p1,vector3_t p2){
     tr.area = vector3_length(c) * 0.5f;
     return tr;
 }
-//TODO finir tout
 
-struct Ray {
+
+typedef struct ray_s {
     vector3_t origin;
     vector3_t direction;
+}ray_t;
 
-    explicit Ray(vector3_t o, vector3_t d) : origin(o), direction(d) { }
+ray_t ray_init(vector3_t o, vector3_t d) {
+    ray_t r = {o, d};
+    return r;
+}
 
-    vector3_t at(float t){
-        return origin + t * direction;
-    }
-};
+vector3_t ray_at(ray_t r, float t){
+    return vector3_add(r.origin, vector3_mult(r.direction, t));
+}
 
-struct PlayerShape {
-    vector3_t segment_up{};
-    vector3_t segment_bottom{};
-    vector3_t tip_up{};
-    vector3_t tip_bottom{};
-    vector3_t mid_point{};
+typedef struct playerShape_s {
+    vector3_t segment_up;
+    vector3_t segment_bottom;
+    vector3_t tip_up;
+    vector3_t tip_bottom;
+    vector3_t mid_point;
     float radius;
+}playerShape_t;
 
-    explicit PlayerShape(vector3_t player_pos, float height, float r) : radius(r) {
-        this->mid_point = player_pos;
-        this->segment_up = player_pos + (VECTOR3_UP * (height * 0.5f));
-        this->segment_bottom = player_pos - (VECTOR3_UP * (height * 0.5f));
-        this->tip_up = this->segment_up + VECTOR3_UP * this->radius;
-        this->tip_bottom = this->segment_bottom - VECTOR3_UP * this->radius;
-    }
+playerShape_t playerShape_init(vector3_t player_pos, float height, float r){
+    playerShape_t ps = {.radius = r};
+    ps.mid_point = player_pos;
+    ps.segment_up = vector3_add(player_pos, vector3_mult(VECTOR3_UP, height * 0.5f));
+    ps.segment_bottom = vector3_add(player_pos, vector3_mult(VECTOR3_DOWN, height * 0.5f));
+    ps.tip_up = vector3_add(ps.segment_up, vector3_mult(VECTOR3_UP, ps.radius));
+    ps.tip_bottom = vector3_add(ps.segment_bottom, vector3_mult(VECTOR3_DOWN, ps.radius));;
+    return ps;
+}
 
-    void displace(vector3_t displacement) {
-        this->mid_point += displacement;
-        this->segment_up += displacement;
-        this->segment_bottom += displacement;
-        this->tip_up += displacement;
-        this->tip_bottom += displacement;
-    }
-};
+void playerShape_displace(playerShape_t* ps, vector3_t displacement);
 
-struct StaticCollider {
-    std::vector<Triangle> triangles;
-    explicit StaticCollider(ObjModelData& obj_data,vector3_t position,vector3_t rotation);
-};
+typedef struct staticCollider_s {
+    list_t* triangles; //triangle_t
+} staticCollider_t;
 
-struct Physics {
-    static vector3_t compute_penetrations(vector3_t player_pos,std::vector<StaticCollider>& static_colliders);
-    static bool is_grounded(vector3_t player_pos,vector3_t player_move_dir_horz,std::vector<StaticCollider>& static_colliders, vector3_t ground_normal);
-    static bool raycast(Ray& ray, float max_dist,std::vector<StaticCollider>& static_colliders, Ray& out);
-    static bool resolve_penetration(PlayerShape& player_shape,Triangle& triangle, vector3_t penetration);
-};
+staticCollider_t* staticCollider_init(objModelData_t* obj_data, vector3_t position, vector3_t rotation);
+void staticCollider_freealloc(staticCollider_t* sc);
+void staticCollider_destroy(staticCollider_t** sc);
+//TODO finir tout
 
-class World {
-    std::vector<StaticCollider> static_colliders;
-    void register_static_collider(ObjModelData& obj_data,vector3_t position,vector3_t rotation);
+//Physique
+vector3_t compute_penetrations(vector3_t player_pos, list_t* static_colliders);
+int is_grounded(vector3_t player_pos,vector3_t player_move_dir_horz, list_t* static_colliders, vector3_t* ground_normal);
+int raycast(ray_t ray, float max_dist, list_t* static_colliders, ray_t* out);
+int resolve_penetration(playerShape_t* player_shape, triangle_t triangle, vector3_t* penetration);
+
+
+typedef struct world_s {
+    list_t* static_colliders; //staticCollider_t
 
     // Player
-    vector3_t player_position{ };
-    vector3_t player_forward{ 0, 0, -1 };
-    vector3_t player_velocity{ 0, 0, 0 };
-    bool is_prev_grounded = false;
-    bool fly_move_enabled = false;
-    void fly_move(Platform& platform, float dt);
-    void mouse_look(Platform& platform, float dt);
+    vector3_t player_position;
+    vector3_t player_forward;
+    vector3_t player_velocity;
+    int is_prev_grounded;
+    int fly_move_enabled;
+}world_t;
 
-public:
-    void register_scene(Scene& scene);
-    void player_tick(Platform& platform, float dt);
-    Matrix4 get_view_matrix() const;
-};
+world_t* world_init();
+void world_freealloc(world_t* w);
+void world_destroy(world_t** w);
+
+void world_fly_move(world_t* w, platform_t* platform, float dt);
+void world_mouse_look(world_t* w, platform_t* platform, float dt);
+matrix4_t world_get_view_matrix(world_t* w);
+void world_register_scene(world_t* w, scene_t* scene);
+void world_player_tick(world_t* w, platform_t* platform, float dt);
+void world_register_static_collider(world_t* w, objModelData_t* obj_data, vector3_t position, vector3_t rotation);
+
+#endif

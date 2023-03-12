@@ -8,15 +8,15 @@ float skybox_vertex_data[108] = {
     1.0, -1.0, -1.0, -1.0, -1.0, 1.0, -1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, -1.0, 1.0,
     -1.0, -1.0, 1.0, -1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, -1.0, 1.0, 1.0,
     -1.0, 1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, 1.0, 1.0, -1.0, -1.0, 1.0, -1.0, -1.0, -1.0,
-    -1.0, 1.0, 1.0, -1.0, 1.0,
+    -1.0, 1.0, 1.0, -1.0, 1.0
 };
 
-void load_skybox_face(char face_path, GLuint skybox_side) {
+void load_skybox_face(char* face_path, GLuint skybox_side) {
     image_t* image = image_init(face_path);
     glTexImage2D(skybox_side, 0, GL_RGBA, image->width, image->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image->image_data);
 }
 
-skybox_t skybox_init(char* skybox_path, matrix4_t projection) {
+skybox_t* skybox_init(char* skybox_path, matrix4_t projection) {
     skybox_t* sb = malloc(sizeof(skybox_t));
     char sb_png_path[256];
     glGenBuffers(1, &sb->vbo);

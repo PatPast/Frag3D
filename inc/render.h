@@ -48,8 +48,8 @@ typedef struct staticRenderUnit_s {
 }staticRenderUnit_t;
 
 
-staticRenderUnit_t* staticRenderUnit_init(material_t* material, objSubmodelData_t* obj_submodel_data, objModelData_t* obj_data,
-    vector3_t position, vector3_t rotation);
+staticRenderUnit_t* staticRenderUnit_init(material_t* material, objSubmodelData_t* obj_submodel_data, objModelData_t* obj_data, vector3_t position, vector3_t rotation);
+void staticRenderUnit_render(staticRenderUnit_t* sru);
 void staticRenderUnit_freealloc(staticRenderUnit_t* sru);
 void staticRenderUnit_destroy(staticRenderUnit_t** sru);
 

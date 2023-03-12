@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <common.h>
+#include <geom.h>
 
 // Initialise une nouvelle liste
 list_t* list_init(size_t data_size) {
@@ -38,7 +39,7 @@ void list_add(list_t* l, void* data) {
     l->size++;
 }
 
-// Copie le contenu de la liste b dans la liste a
+// Retourne une copie de la liste l
 list_t* list_duplicate(list_t* l) {
     list_t* newlist = list_init(l->data_size);
     list_foreach(data, l){

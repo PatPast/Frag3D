@@ -2,12 +2,18 @@
 #include <render_debug.h>
 #include <stdlib.h>
 #include <common.h>
-float shadow_near_plane = 0.001f;
-float shadow_far_plane = 1000.0f;
+
+
 size_t point_shadowmap_size = 1024;
 size_t directional_shadowmap_size = 2048;
-
-
+float near_plane = 0.001f;
+float far_plane = 1000.0f;
+float shadow_near_plane = 0.001f;
+float shadow_far_plane = 1000.0f;
+vector2i_t draw_framebuffer_size = {640, 360};
+int window_width = 1080; //TODO
+int window_height = 720; //les mettre dans un fichier de config en static
+int max_point_light_count = 10; // TODO @CLEANUP: We have the same define in the world shader
 
 pointLight_t* pointLight_init(pointLightInfo_t point_light_info, int light_index){
 
@@ -56,7 +62,7 @@ void pointLight_destroy(pointLight_t** pl){
 float pointLight_wiggle_intensity(pointLight_t* pl, float dt) {
     
     const float range = 500.0f;
-    const float perc = (float)rand()/((float)RAND_MAX/range); // valeur flottante aleatoir entre 0 et range
+    const float perc = random_float(0, range); // valeur flottante aleatoir entre 0 et range
     const float target_intensity = pl->base_info.intensity + (pl->base_info.intensity * (perc / 100.0f));
     const float new_current = lerp(pl->current_info.intensity, target_intensity, dt * 10);
     pl->current_info.intensity = new_current;

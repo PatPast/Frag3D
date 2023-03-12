@@ -2,10 +2,9 @@
 #define _ASSETS_H_
 
 
-#include <common.h>
-#include <string.h>
-#include <stdlib.h>
-//#include "vector3.h"
+#include <vector3.h>
+#include <list.h>
+
 
 typedef struct objFaceData_s {
     size_t position_indices[3];
@@ -52,11 +51,15 @@ typedef struct worldspawnEntry_s {
     vector3_t rotation;
 }worldspawnEntry_t;
 
+void worldspawnEntry_freealloc(worldspawnEntry_t* entry);
+
 typedef struct propEntry_s {
     char* obj_name;
     vector3_t position;
     vector3_t rotation;
 }propEntry_t;
+
+void propEntry_freealloc(propEntry_t* entry);
 
 typedef struct pointLightInfo_s {
     vector3_t position;
@@ -76,9 +79,10 @@ typedef struct scene_s {
     list_t* worldspawn; //worldspawnEntry_t
     list_t* props; //propEntry_t
     list_t* point_light_info; //pointLightInfo_t
-    list_t* directional_light_info; //pointLightInfo_t
+    directionalLightInfo_t directional_light_info; //directionalLightInfo_t
 }scene_t;
 
 scene_t* scene_read_scene(char* file_path);
+void scene_destroy(scene_t** scene);
 
 #endif
