@@ -1,6 +1,7 @@
 #include <world.h> 
 #include <geom.h>
 #include <vector3.h>
+#include <config.h>
 
 
 float fly_speed = 30.0f;

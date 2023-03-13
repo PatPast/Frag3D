@@ -5,9 +5,6 @@
 #include <config.h>
 #include <vector3.h>
 
-int window_width = 1080; //TODO
-int window_height = 720; //les mettre dans un fichier de config en static
-
 
 platform_t* platform_init() {
 

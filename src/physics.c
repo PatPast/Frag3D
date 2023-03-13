@@ -1,9 +1,8 @@
 #include <stdio.h>
 #include <geom.h>
 #include <world.h>
+#include <config.h>
 
-float player_height = 2.0f; //Todo à mettre dans config
-float player_radius = 0.5f;
 
 int resolve_penetration(playerShape_t* player_shape, triangle_t triangle, vector3_t* penetration){
     vector3_t closer_segment_point; // Could be on the segment itself

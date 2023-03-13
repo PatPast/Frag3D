@@ -117,7 +117,7 @@ objModelData_t* objModelData_load(const char* file_path){
     }
 
     //ignorer tout avant mtllib
-    while (fscanf(obj_file, "%[^\n] ", buffer)) {
+    while (fscanf(obj_file, "%[^\n]", buffer)) {
         if (strstr(buffer, "mtllib") != NULL) {
             break; 
         }

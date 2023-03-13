@@ -1,5 +1,32 @@
 #include <world.h>
 
+triangle_t triangle_init(vector3_t p0,vector3_t p1,vector3_t p2){
+    triangle_t tr = {p0, p1, p2};  
+    vector3_t c = vector3_cross(vector3_sub(p1, p0), vector3_sub(p2, p0));
+    tr.normal = vector3_normalize(c);
+    tr.area = vector3_length(c) * 0.5f;
+    return tr;
+}
+
+ray_t ray_init(vector3_t o, vector3_t d) {
+    ray_t r = {o, d};
+    return r;
+}
+
+vector3_t ray_at(ray_t r, float t){
+    return vector3_add(r.origin, vector3_mult(r.direction, t));
+}
+
+playerShape_t playerShape_init(vector3_t player_pos, float height, float r){
+    playerShape_t ps = {.radius = r};
+    ps.mid_point = player_pos;
+    ps.segment_up = vector3_add(player_pos, vector3_mult(VECTOR3_UP, height * 0.5f));
+    ps.segment_bottom = vector3_add(player_pos, vector3_mult(VECTOR3_DOWN, height * 0.5f));
+    ps.tip_up = vector3_add(ps.segment_up, vector3_mult(VECTOR3_UP, ps.radius));
+    ps.tip_bottom = vector3_add(ps.segment_bottom, vector3_mult(VECTOR3_DOWN, ps.radius));;
+    return ps;
+}
+
 void playerShape_displace(playerShape_t* ps, vector3_t displacement) {
     ps->mid_point = vector3_add(ps->mid_point, displacement);
     ps->segment_up = vector3_add(ps->segment_up, displacement);
