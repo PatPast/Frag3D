@@ -56,7 +56,7 @@ void create_point_light_cubemap_and_fbo(tex_handle_t* cubemap_handle, buffer_han
 
 renderer_t* renderer_init() {
     renderer_t* rdr;
-    gladLoadGL();
+    //gladLoadGL();
     //glewInit(); // Needs to be after the glfw context creation
     // TODO @CLEANUP: This looks stupid. We're doing this stuff on a variable declaration in main()
     // Would look better in an Init function or something.
@@ -88,6 +88,8 @@ renderer_t* renderer_init() {
     shader_set_float(rdr->world_shader, "u_far_plane", shadow_far_plane);
 
     rdr->skybox = skybox_init("assets/skybox/gehenna", MATRIX4_PERSPECTIVE);
+
+    return rdr;
 }
 
 void renderer_register_scene(renderer_t* rdr, scene_t* scene) {

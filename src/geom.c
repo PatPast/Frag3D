@@ -60,7 +60,7 @@ vector3_t project_point_on_triangle_plane(vector3_t point, triangle_t triangle, 
 
 int is_point_in_triangle(vector3_t point, triangle_t triangle) {
     if (abs(vector3_dot(vector3_sub(point, triangle.p0), triangle.normal)) > 0.0001f) {
-        //Debug::log("Attempted to perform point-triangle check on non-coplanar point-triangle : \n point %s\n\
+        //Debug::log("Attempted to perform point-triangle check on non-coplanar point-triangle : \n point %s\n
         //    triangle p0: %s \ntriangle normal: %s", point.to_string(), triangle.p0.to_string(), triangle.normal.to_string());
         return 0;
     }

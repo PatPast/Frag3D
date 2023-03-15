@@ -1,3 +1,4 @@
+/*
 #include <SDL2/SDL.h>
 #include <glad/glad.h>
 #include <stdlib.h>
@@ -158,8 +159,8 @@ int main(int argc, char *argv[])
 	SDL_Quit(); 
 	return 0;
 }
+*/
 
-/*
 #include <SDL2/SDL.h>
 #include <glad/glad.h>
 #include <render.h>
@@ -171,17 +172,42 @@ int main(int argc, char *argv[])
 // TODO @NEXT: Player start pos
 // TODO @NEXT: Shoot footage
 
+static platform_t* platform;
+static renderer_t* renderer;
+static world_t* world;
+static scene_t* scene;
+
+void platform_exit(){
+	platform_destroy(&platform);
+}
+void renderer_exit(){
+	renderer_destroy(&renderer);
+}
+void world_exit(){
+	world_destroy(&world);
+}
+void scene_exit(){
+	scene_destroy(&scene);
+}
+
 int main(int argc, char *argv[]){
 
 	gladLoadGL();
     // TODO @CLEANUP: To make it run from Unity
-    chdir("c:\\Users\\patoche\\Documents\\Frag3D\\");
+    chdir("../");
+	//TODO, faire en sorte que le chdir marche
 
-    platform_t* platform = platform_init();
-    renderer_t* renderer = renderer_init();
-    world_t* world = world_init();
+    platform = platform_init(); 
+	atexit(platform_exit);
 
-    scene_t* scene = scene_read_scene("assets/test_export.txt");
+    renderer = renderer_init();
+	atexit(renderer_exit);
+
+    world = world_init();
+	atexit(world_exit);
+
+    scene = scene_read_scene("assets/test_export.txt");
+	atexit(scene_exit);
 
     world_register_scene(world, scene);
     renderer_register_scene(renderer, scene);
@@ -200,10 +226,6 @@ int main(int argc, char *argv[]){
     }
 
 
-	scene_destroy(&scene);
-	world_destroy(&world);
-	renderer_destroy(&renderer);
-	platform_destroy(&platform);
+
     return 0;
 }
-*/

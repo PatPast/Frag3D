@@ -38,6 +38,9 @@ platform_t* platform_init() {
     pf->prev_mouse_y = mouse_y;
     pf->mouse_dx = 0;
     pf->mouse_dy = 0;
+
+    
+    return pf;
 }
 void platform_freealloc(platform_t* pf){
     SDL_GL_DeleteContext(pf->context);

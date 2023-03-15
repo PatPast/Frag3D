@@ -107,6 +107,7 @@ vector3_t matrix4_mult_vector3(matrix4_t m, vector3_t v){
         m.data[1 * 4 + 0] * v.x + m.data[1 * 4 + 1] * v.y + m.data[1 * 4 + 2] * v.z + m.data[1 * 4 + 3],
         m.data[2 * 4 + 0] * v.x + m.data[2 * 4 + 1] * v.y + m.data[2 * 4 + 2] * v.z + m.data[2 * 4 + 3]
     };
+    return new_m;
 }
 
 matrix4_t matrix4_rotation(vector3_t euler){

@@ -67,6 +67,8 @@ skybox_t* skybox_init(char* skybox_path, matrix4_t projection) {
     shader_use(sb->shader);
     shader_set_mat4(sb->shader, "u_projection", projection);
     shader_set_int(sb->shader, "u_skybox", 0);
+
+    return sb;
 }
 
 void skybox_destroy(skybox_t** sb) {

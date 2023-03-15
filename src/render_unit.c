@@ -93,6 +93,8 @@ staticRenderUnit_t* staticRenderUnit_init(material_t* material, objSubmodelData_
     }
     free(vertex_data);
     free(index_data);
+
+    return sru;
 }
 
 void staticRenderUnit_render(staticRenderUnit_t* sru){
@@ -119,6 +121,11 @@ void staticRenderUnit_destroy(staticRenderUnit_t** sru) {
 image_t* image_init(char* file_path) {
     image_t* img = malloc(sizeof(image_t));    
     SDL_Surface* data = IMG_Load(file_path);
+    if (!data){
+        fprintf(stderr, "Peux pas charger %s\n", file_path);
+        free(img);
+        exit(1);
+    }
 
     img->image_data = data->pixels;
     img->width = data->w;

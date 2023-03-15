@@ -24,6 +24,7 @@ char* file_to_string(FILE* fp){
 
     fread(buffer, sizeof(char), file_size, fp);
 
+    return buffer;
 }
 
 shader_handle_t load_shader(char* header, char* program_string, int shader_type) {
@@ -58,12 +59,12 @@ shader_handle_t load_shader(char* header, char* program_string, int shader_type)
 
 shader_t shader_init(char* file_path) {
     shader_t sh = {invalid_shader};
-    char buffer[BUFFER_SIZE];
+    //char buffer[BUFFER_SIZE];
 
     FILE* shader_file = fopen(file_path, "r");
 
     if (shader_file == NULL) {
-        fprintf(stderr, "Impossible d'ouvrir le fichier de shader : '%s'\n", shader_file);
+        fprintf(stderr, "Impossible d'ouvrir le fichier de shader : '%s'\n", file_path);
         return sh;
     }
 
@@ -82,7 +83,7 @@ shader_t shader_init(char* file_path) {
     free(program_string);
 
     if (vert_shader == invalid_shader || frag_shader == invalid_shader
-         && (has_geom_shader && geom_shader == invalid_shader)) {
+         || (has_geom_shader && geom_shader == invalid_shader)) {
         return sh; // The game is gonna die anyway
     }
 

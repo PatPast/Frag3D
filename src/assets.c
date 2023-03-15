@@ -35,12 +35,12 @@ list_t* load_mtl_file(const char* file_path) {
     material_t current_material; // material courant à stocker
 
     char buffer[BUFFER_SIZE]; //stocke la ligne courante
-    char* end; //pointe vers la fin de la ligne
+    //char* end; //pointe vers la fin de la ligne
 
     FILE* mtl_file = fopen(file_path, "r");
 
     if (mtl_file == NULL) {
-        fprintf(stderr, "Impossible d'ouvrir le fichier mtl '%s'\n", mtl_file);
+        fprintf(stderr, "Impossible d'ouvrir le fichier mtl '%s'\n", file_path);
         list_destroy(&materials);
         return materials;
     }
@@ -111,7 +111,7 @@ objModelData_t* objModelData_load(const char* file_path){
     FILE* obj_file = fopen(file_path, "r");
 
     if (obj_file == NULL) {
-        fprintf(stderr, "Impossible d'ouvrir le fichier obj '%s'\n", obj_file);
+        fprintf(stderr, "Impossible d'ouvrir le fichier obj '%s'\n", file_path);
         free(model);
         return model;
     }
