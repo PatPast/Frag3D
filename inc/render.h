@@ -30,7 +30,7 @@ void shader_use(shader_t sh);
 typedef struct image_s {
     int width;
     int height;
-    unsigned char* image_data;
+    uint32_t* image_data; 
 }image_t;
 
 image_t* image_init(char* file_path);

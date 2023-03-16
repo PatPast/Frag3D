@@ -14,6 +14,7 @@ float skybox_vertex_data[108] = {
 void load_skybox_face(char* face_path, GLuint skybox_side) {
     image_t* image = image_init(face_path);
     glTexImage2D(skybox_side, 0, GL_RGBA, image->width, image->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image->image_data);
+    image_destroy(&image);
 }
 
 skybox_t* skybox_init(char* skybox_path, matrix4_t projection) {

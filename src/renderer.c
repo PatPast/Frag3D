@@ -56,11 +56,14 @@ void create_point_light_cubemap_and_fbo(tex_handle_t* cubemap_handle, buffer_han
 
 renderer_t* renderer_init() {
     renderer_t* rdr;
+    gladLoadGL();
     //gladLoadGL();
     //glewInit(); // Needs to be after the glfw context creation
     // TODO @CLEANUP: This looks stupid. We're doing this stuff on a variable declaration in main()
     // Would look better in an Init function or something.
     glViewport(0, 0, window_width, window_height);
+    glActiveTexture(GL_TEXTURE0);
+    glEnable(GL_TEXTURE_2D);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
     glEnable(GL_CULL_FACE);

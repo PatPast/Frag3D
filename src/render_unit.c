@@ -126,10 +126,14 @@ image_t* image_init(char* file_path) {
         free(img);
         exit(1);
     }
-
-    img->image_data = data->pixels;
+        
     img->width = data->w;
     img->height = data->h;
+
+    int datasize = SDL_BYTESPERPIXEL(data->format->format) * img->width * img->height;
+    img->image_data = malloc(datasize);
+    memcpy(img->image_data, data->pixels, datasize);
+
     if (img->image_data == NULL) {
         printf("Couldn't load the image at: %s\n", file_path);
     }

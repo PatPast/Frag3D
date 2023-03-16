@@ -33,7 +33,7 @@ void main() {
 //    clip_pos.xyz *= clip_pos.w; // NDC -> clip space
 
     gl_Position = clip_pos;
-};
+}
 
 #endif
 
@@ -156,6 +156,6 @@ void main() {
 //        frag_color = shadowed_tex_color;
 //    }
 //
-        frag_color = tex_color * vec4(total_light_color, 1.0);
-};
+    frag_color = tex_color * vec4(total_light_color, 1.0);
+}
 #endif

@@ -9,14 +9,14 @@
 typedef struct list_elem_s {
     void* data;
     struct list_elem_s* next;
+    struct list_elem_s* prev;
 } list_elem_t;
 
 // La structure de données pour représenter la liste
 typedef struct list_s {
     size_t size;
     size_t data_size;
-    list_elem_t* head;
-    list_elem_t* tail;
+    list_elem_t* tip;
     list_elem_t* current;
 } list_t;
 
@@ -28,12 +28,18 @@ void list_add(list_t* l, void* data);
 
 // Parcourt la liste et applique des instructions à chaque élément
 #define list_foreach(_d, _list) \
-    void* _d; \
-    for(_list->current = _list->head; _list->current != NULL; _d = _list->current->data, _list->current = _list->current->next)
+    void* _d;\
+    for(list_elem_t* current = _list->tip->next; (_d = current->data) != NULL && current != _list->tip; current = current->next)
 
 
 // Retourne une copie de la liste l
 list_t* list_duplicate(list_t* l);
+
+// supprime le premier élément de la liste
+void list_delete_first(list_t* l);
+
+// supprime le dernier élément de la liste
+void list_delete_last(list_t* l);
 
 // Retourne l'élément à l'indice donné 
 void* list_elem(list_t* l, int indice);

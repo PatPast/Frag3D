@@ -192,9 +192,12 @@ void scene_exit(){
 
 int main(int argc, char *argv[]){
 
-	gladLoadGL();
+	
+	
     // TODO @CLEANUP: To make it run from Unity
-    chdir("../");
+	
+    //chdir("../");
+	//char s[256]; printf("%s\n", getcwd(s, 100));
 	//TODO, faire en sorte que le chdir marche
 
     platform = platform_init(); 
