@@ -51,12 +51,19 @@ int main(){
     print_test(liste->tip->next->data);
     print_test(liste->tip->prev->data);
 
+    printf("----------------------------\n");
+
+    print_test((test_t*)list_elem(liste, 3));
+    print_test((test_t*)list_elem(liste, 2));
+    print_test((test_t*)list_elem(liste, 1));
+    print_test((test_t*)list_elem(liste, 0));
 
     printf("----------------------------\n");
 
     list_t* liste_copy = list_duplicate(liste); //copy de 'liste' dans 'liste_copy'
     list_delete_last(liste_copy); //suppression du dernier élément de liste
     print_list(liste_copy);
+
 
     printf("----------------------------\n");
 

@@ -68,6 +68,7 @@ void staticCollider_destroy(staticCollider_t** sc){
 
 world_t* world_init(){
     world_t* w = malloc((sizeof(world_t)));
+    w->static_colliders =  list_init(sizeof(staticCollider_t));
     w->player_position = VECTOR3_ZERO;
     w->player_forward = VECTOR3_FORWARD;
     w->player_velocity = VECTOR3_ZERO;
@@ -103,6 +104,7 @@ void world_register_scene(world_t* w, scene_t* scene){
 void world_register_static_collider(world_t* w, objModelData_t* obj_data, vector3_t position, vector3_t rotation){
     staticCollider_t* sc = staticCollider_init(obj_data, position, rotation);
     list_add(w->static_colliders, sc);
-    free(sc);
+    free(sc); 
+    //TODO voir s'il faut free
 }
 

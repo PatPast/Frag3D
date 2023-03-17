@@ -209,11 +209,14 @@ int main(int argc, char *argv[]){
     world = world_init();
 	atexit(world_exit);
 
+	
+
     scene = scene_read_scene("assets/test_export.txt");
 	atexit(scene_exit);
 
     world_register_scene(world, scene);
     renderer_register_scene(renderer, scene);
+	//scene_destroy(&scene);
 
     float prev_time = platform_get_time();
     while (!platform_should_window_close(platform)) {

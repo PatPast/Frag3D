@@ -17,7 +17,6 @@ typedef struct list_s {
     size_t size;
     size_t data_size;
     list_elem_t* tip;
-    list_elem_t* current;
 } list_t;
 
 // Initialise une nouvelle liste

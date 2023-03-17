@@ -13,7 +13,6 @@ list_t* list_init(size_t data_size) {
     l->tip->data = NULL;
     l->tip->next = l->tip;
     l->tip->prev = l->tip;
-    l->current = l->tip;
     return l;
 }
 
@@ -50,11 +49,11 @@ list_t* list_duplicate(list_t* l) {
 
 void* list_elem(list_t* l, int indice){
     if(l->size == 0) return NULL;
-    l->current = l->tip;
+    list_elem_t* current = l->tip->next;
     for(int i = 0; i < indice; i++){
-        l->current = l->current->next;
+        current = current->next;
     }
-    return l->current->data;
+    return current->data;
 }
 
 // supprime le premier élément de la liste

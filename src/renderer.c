@@ -72,6 +72,9 @@ renderer_t* renderer_init() {
     glDepthFunc(GL_LESS);
 
     rdr = malloc(sizeof(renderer_t));
+    rdr->render_units = list_init(sizeof(staticRenderUnit_t));
+    rdr->point_lights = list_init(sizeof(pointLight_t));
+
 
     create_draw_fbo(&rdr->draw_fbo, &rdr->draw_tex_handle, &rdr->draw_rbo);
     create_point_light_cubemap_and_fbo(&rdr->point_light_cubemap_handle, &rdr->point_light_fbo, max_point_light_count);
@@ -97,18 +100,18 @@ renderer_t* renderer_init() {
 
 void renderer_register_scene(renderer_t* rdr, scene_t* scene) {
 
-    list_foreach(worldspawn,scene->worldspawn) {
-        worldspawnEntry_t* entry = (worldspawnEntry_t*)worldspawn;
+    list_foreach(e,scene->worldspawn) {
+        worldspawnEntry_t* entry = (worldspawnEntry_t*)e;
         objModelData_t* obj_data = objModelData_load(entry->obj_name); // TODO convertir en c
         renderer_register_static_obj(rdr, obj_data ,entry->position, entry->rotation);
-        objModelData_destroy(&obj_data);
+        free(obj_data); //TODO voir si neccesaire, dans tout les autre fichiers où on l'instancie aussi
     }
 
     list_foreach(prop,scene->props) {
         propEntry_t* entry = (propEntry_t*)prop;
         objModelData_t* obj_data = objModelData_load(entry->obj_name); // TODO convertir en c
         renderer_register_static_obj(rdr, obj_data, entry->position, entry->rotation);
-        objModelData_destroy(&obj_data);
+        free(obj_data);
     }
 
     list_foreach(entry,scene->point_light_info) {
@@ -120,11 +123,12 @@ void renderer_register_scene(renderer_t* rdr, scene_t* scene) {
 }
 
 void renderer_register_static_obj(renderer_t* rdr, objModelData_t* obj_data, vector3_t position, vector3_t rotation) {
-    //TODO list_foreach imbrication erreur
-    list_foreach(obj_face_data, obj_data->submodel_data) {
+    list_foreach(o, obj_data->submodel_data) {
+        objSubmodelData_t* obj_face_data = (objSubmodelData_t*)o;
         list_foreach(m, obj_data->materials) {
-            if (strcmp(((material_t*)m)->name, ((objSubmodelData_t*)obj_face_data)->material_name) == 0) {
-                staticRenderUnit_t* ru = staticRenderUnit_init((material_t*)m, (objSubmodelData_t*)obj_face_data, obj_data, position, rotation);
+            material_t* mat = (material_t*)m;
+            if (strcmp(mat->name, obj_face_data->material_name) == 0) {
+                staticRenderUnit_t* ru = staticRenderUnit_init(mat, obj_face_data, obj_data, position, rotation);
                 list_add(rdr->render_units,ru);
                 free(ru);
             }

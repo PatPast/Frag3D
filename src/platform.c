@@ -11,8 +11,8 @@ platform_t* platform_init() {
     platform_t* pf = malloc(sizeof(platform_t));
 
     // TODO @CLEANUP: Feels weird to only define a Platform variable doing this sort of thing
-    srand(time(NULL)); 
-    SDL_Init(SDL_INIT_EVERYTHING);
+    srand(time(NULL));
+    SDL_Init(SDL_INIT_VIDEO);
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
@@ -22,7 +22,7 @@ platform_t* platform_init() {
     int window_x = (1920 / 2) - (window_width / 2);
     int window_y = (1080 / 2) - (window_height / 2);
 
-    pf->window = SDL_CreateWindow("Frag3D", window_x, window_y, window_width, window_height, SDL_WINDOW_OPENGL);
+    pf->window = SDL_CreateWindow("Frag3D", window_x, window_y, window_width, window_height, SDL_WINDOW_OPENGL | SDL_WINDOW_MINIMIZED);
 	pf->context = SDL_GL_CreateContext(pf->window);
 
     for(int i = 0; i < NB_KEYCODE; i++){ 
@@ -44,6 +44,7 @@ platform_t* platform_init() {
 }
 void platform_freealloc(platform_t* pf){
     SDL_GL_DeleteContext(pf->context);
+    SDL_DestroyWindow(pf->window);
 	SDL_Quit();
 }
 

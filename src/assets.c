@@ -32,7 +32,7 @@ void objModelData_freealloc(objModelData_t* model){
 
 list_t* load_mtl_file(const char* file_path) {
     list_t* materials = list_init(sizeof(material_t)); //liste des material à retourner
-    material_t current_material; // material courant à stocker
+    material_t current_material = {0}; // material courant à stocker
 
     char buffer[BUFFER_SIZE]; //stocke la ligne courante
     //char* end; //pointe vers la fin de la ligne
@@ -98,11 +98,11 @@ objModelData_t* objModelData_load(const char* file_path){
 
     objSubmodelData_t current_submodel = {NULL, list_init(sizeof(objFaceData_t))}; //objSubmodelData_t courant
     objSubmodelData_t prev_face_data;
-    objFaceData_t current_face_data;
+    objFaceData_t current_face_data = {0};
 
-    vector3_t current_position_data;
-    vector2_t current_uv_data;
-    vector3_t current_normal_data;
+    vector3_t current_position_data = {0};
+    vector2_t current_uv_data = {0};
+    vector3_t current_normal_data = {0};
 
     char buffer[BUFFER_SIZE]; //stocke la ligne courante
 
@@ -117,17 +117,19 @@ objModelData_t* objModelData_load(const char* file_path){
     }
 
     //ignorer tout avant mtllib
-    while (fscanf(obj_file, "%[^\n]", buffer)) {
-        if (strstr(buffer, "mtllib") != NULL) {
+    while (fgets(buffer, BUFFER_SIZE, obj_file)) 
+        if (strstr(buffer, "mtllib") != NULL) 
             break; 
-        }
-    }
+    
+    //place un marqueur de fin de chaine de caractère a la fin de la ligne 
+    //buffer[(int)(strchr(buffer, '\n') - buffer)] = '\0';
     
     char* mtllib_name = strdup(buffer + 9); //commence après le "mtllib ./"
     char* mtllib_path = strdup(file_path);
     char* slash_index = strrchr(mtllib_path, '/'); //dernier slash du file_path
     *++slash_index = '\0'; //efface ce qui est après
     strcat(mtllib_path, mtllib_name); //pour choisir le fichier mtl
+    if (mtllib_path[strlen(mtllib_path) - 1] == '\n')  mtllib_path[strlen(mtllib_path) - 1] = '\0';
 
     model->materials = load_mtl_file(mtllib_path);
     free(mtllib_name);
@@ -231,7 +233,7 @@ scene_t* scene_read_scene(char* file_path){
         //place un marqueur de fin de chaine de caractère a la fin d'une ligne 
         buffer[(int)(strchr(buffer, '\n') - buffer)] = '\0'; 
         
-        
+        //TODO faire en sort que ca ne mette rien quand \n n'est pas trouvé
 
         //ignorer les lignes vides et les commentaires
         if (buffer[0] == '\0' || buffer[0] == '#') {
@@ -278,7 +280,7 @@ scene_t* scene_read_scene(char* file_path){
             buffer[(int)(strchr(buffer, '\n') - buffer)] = '\0';
             sscanf(buffer, "%f %f %f", &current_prop.rotation.x, &current_prop.rotation.y, &current_prop.rotation.z);
 
-            list_add(scene->worldspawn, (void*)&current_prop);
+            list_add(scene->props, (void*)&current_prop);
         }
 
         else if (strncmp(buffer, "@point_light", 12) == 0) {
@@ -298,7 +300,7 @@ scene_t* scene_read_scene(char* file_path){
             buffer[(int)(strchr(buffer, '\n') - buffer)] = '\0';
             sscanf(buffer, "%f", &current_pointLightInfo.attenuation);
 
-            list_add(scene->worldspawn, (void*)&current_pointLightInfo);
+            list_add(scene->point_light_info, (void*)&current_pointLightInfo);
         }
 
         else if (strncmp(buffer, "@directional_light", 17) == 0) {
