@@ -52,6 +52,7 @@ typedef struct worldspawnEntry_s {
 }worldspawnEntry_t;
 
 void worldspawnEntry_freealloc(worldspawnEntry_t* entry);
+void worldspawnEntry_print(worldspawnEntry_t* entry);
 
 typedef struct propEntry_s {
     char* obj_name;
@@ -60,6 +61,7 @@ typedef struct propEntry_s {
 }propEntry_t;
 
 void propEntry_freealloc(propEntry_t* entry);
+void propEntry_print(propEntry_t* entry);
 
 typedef struct pointLightInfo_s {
     vector3_t position;
@@ -68,10 +70,15 @@ typedef struct pointLightInfo_s {
     float attenuation;
 }pointLightInfo_t;
 
+void pointLightInfo_print(pointLightInfo_t* pli);
+
 typedef struct directionalLightInfo_s {
     vector3_t position;
     vector3_t color;
 }directionalLightInfo_t;
+
+void directionalLightInfo_print(directionalLightInfo_t* dli);
+
 
 typedef struct scene_s {
     vector3_t player_start;
@@ -84,5 +91,6 @@ typedef struct scene_s {
 
 scene_t* scene_read_scene(char* file_path);
 void scene_destroy(scene_t** scene);
+void scene_print(scene_t* scene);
 
 #endif

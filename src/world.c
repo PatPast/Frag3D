@@ -8,6 +8,14 @@ triangle_t triangle_init(vector3_t p0,vector3_t p1,vector3_t p2){
     return tr;
 }
 
+void triangle_print(triangle_t* triangle){
+    printf("{p0  : "); vector3_print(triangle->p0);
+    printf("; p1  : "); vector3_print(triangle->p1);
+    printf("; p2  : "); vector3_print(triangle->p2);
+    printf("; normal  : "); vector3_print(triangle->normal);
+    printf("; area : %f}", triangle->area);
+}
+
 ray_t ray_init(vector3_t o, vector3_t d) {
     ray_t r = {o, d};
     return r;
@@ -66,6 +74,10 @@ void staticCollider_destroy(staticCollider_t** sc){
     *sc = NULL;
 }
 
+void staticCollider_print(staticCollider_t* sc){
+    printf("{triangles  : \n"); list_print(sc->triangles, (void (*)(void *))triangle_print); printf("}");  
+}
+
 world_t* world_init(){
     world_t* w = malloc((sizeof(world_t)));
     w->static_colliders =  list_init(sizeof(staticCollider_t));
@@ -98,6 +110,7 @@ void world_register_scene(world_t* w, scene_t* scene){
         worldspawnEntry_t* entry = (worldspawnEntry_t*)e;
         objModelData_t* obj_data = objModelData_load(entry->obj_name);
         world_register_static_collider(w, obj_data, entry->position, entry->rotation);
+        free(obj_data);
     }
 }
 
@@ -108,3 +121,13 @@ void world_register_static_collider(world_t* w, objModelData_t* obj_data, vector
     //TODO voir s'il faut free
 }
 
+void world_print(world_t* w){
+    printf("--- WORLD :\n{\n");
+    printf("props  : \n"); list_print(w->static_colliders, (void (*)(void *))staticCollider_print);
+    printf("player_position  : "); vector3_print(w->player_position); putchar('\n');
+    printf("player_forward  : "); vector3_print(w->player_forward); putchar('\n');
+    printf("player_velocity  : "); vector3_print(w->player_velocity); putchar('\n');
+    printf("is_prev_grounded : %d\n", w->is_prev_grounded);
+    printf("fly_move_enabled : %d\n}\n", w->fly_move_enabled);
+
+}

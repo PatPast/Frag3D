@@ -4,8 +4,7 @@
 #include <stdio.h>
 #include <render.h>
 
-staticRenderUnit_t* staticRenderUnit_init(material_t* material, objSubmodelData_t* obj_submodel_data, objModelData_t* obj_data,
-    vector3_t position, vector3_t rotation) {
+staticRenderUnit_t* staticRenderUnit_init(material_t* material, objSubmodelData_t* obj_submodel_data, objModelData_t* obj_data, vector3_t position, vector3_t rotation) {
     float* vertex_data; //float
     int vertex_data_size;
     int* index_data; //float
@@ -89,7 +88,7 @@ staticRenderUnit_t* staticRenderUnit_init(material_t* material, objSubmodelData_
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image->width, image->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image->image_data); //checker si ca marche ou pas
 
-        image_destroy(&image);
+        //image_destroy(&image);
     }
     free(vertex_data);
     free(index_data);
@@ -116,6 +115,12 @@ void staticRenderUnit_destroy(staticRenderUnit_t** sru) {
     free(*sru);
     *sru = NULL;
 }
+
+void staticRenderUnit_print(staticRenderUnit_t* sru){
+    printf("{vao : %d; vbo : %d; ibo : %d; tex_handle : %d; index_data_length : %ld}",
+        sru->vao, sru->vbo, sru->ibo, sru->tex_handle, sru->index_data_length);
+}
+
 
 //TODO etre sur que ca marche
 image_t* image_init(char* file_path) {

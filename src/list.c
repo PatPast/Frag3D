@@ -6,13 +6,12 @@
 // Initialise une nouvelle liste
 list_t* list_init(size_t data_size) {
     list_t* l;
-    l = malloc(sizeof(list_t));
+    l = calloc(1, sizeof(list_t));
     l->size = 0;
     l->data_size = data_size;
-    l->tip = malloc(sizeof(list_elem_t));
-    l->tip->data = NULL;
-    l->tip->next = l->tip;
-    l->tip->prev = l->tip;
+    l->tip.data = NULL;
+    l->tip.next = &l->tip;
+    l->tip.prev = &l->tip;
     return l;
 }
 
@@ -30,10 +29,10 @@ void list_add(list_t* l, void* data) {
     memcpy(new_data, data, l->data_size);
 
     new_elem->data = new_data;
-    new_elem->next = l->tip; 
-    new_elem->prev = l->tip->prev;
-    l->tip->prev->next = new_elem;
-    l->tip->prev = new_elem;
+    new_elem->next = &l->tip; 
+    new_elem->prev = l->tip.prev;
+    l->tip.prev->next = new_elem;
+    l->tip.prev = new_elem;
 
     l->size++;
 }
@@ -49,7 +48,7 @@ list_t* list_duplicate(list_t* l) {
 
 void* list_elem(list_t* l, int indice){
     if(l->size == 0) return NULL;
-    list_elem_t* current = l->tip->next;
+    list_elem_t* current = l->tip.next;
     for(int i = 0; i < indice; i++){
         current = current->next;
     }
@@ -58,18 +57,18 @@ void* list_elem(list_t* l, int indice){
 
 // supprime le premier élément de la liste
 void list_delete_first(list_t* l){
-    list_elem_t* old = l->tip->next;
-    l->tip->next = old->next;
-    old->next->prev = l->tip;
+    list_elem_t* old = l->tip.next;
+    l->tip.next = old->next;
+    old->next->prev = &l->tip;
     free(old->data);
     free(old);
 }
 
 // supprime le dernier élément de la liste
 void list_delete_last(list_t* l){
-    list_elem_t* old = l->tip->prev;
-    l->tip->prev = old->prev;
-    old->prev->next = l->tip;
+    list_elem_t* old = l->tip.prev;
+    l->tip.prev = old->prev;
+    old->prev->next = &l->tip;
     free(old->data);
     free(old);
 }
@@ -77,15 +76,26 @@ void list_delete_last(list_t* l){
 
 // supprime les élements de la liste (attention aux fuites de mémoires)
 void list_clear(list_t* l) {
-    while (l->tip != l->tip->next) list_delete_first(l);
+    while (&l->tip != l->tip.next) list_delete_first(l);
     l->size = 0;
 }
 
 // Libère la mémoire utilisée par la liste
 void list_destroy(list_t** l) {
     list_clear(*l);
-    free((*l)->tip);
     free(*l);
     *l = NULL;
+}
+
+//afficher tout les element de la liste
+void list_print(list_t* l, void (*print_elem)(void*)){
+    int i = 0;
+    list_foreach(elem, l){
+        putchar('\t');
+        printf("%d -> ", i);
+        print_elem(elem);
+        putchar('\n');
+        i++;
+    }
 }
 

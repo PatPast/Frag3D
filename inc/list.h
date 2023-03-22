@@ -16,7 +16,7 @@ typedef struct list_elem_s {
 typedef struct list_s {
     size_t size;
     size_t data_size;
-    list_elem_t* tip;
+    list_elem_t tip;
 } list_t;
 
 // Initialise une nouvelle liste
@@ -28,7 +28,7 @@ void list_add(list_t* l, void* data);
 // Parcourt la liste et applique des instructions à chaque élément
 #define list_foreach(_d, _list) \
     void* _d;\
-    for(list_elem_t* current = _list->tip->next; (_d = current->data) != NULL && current != _list->tip; current = current->next)
+    for(list_elem_t* current = _list->tip.next; (_d = current->data) != NULL && current != &_list->tip; current = current->next)
 
 
 // Retourne une copie de la liste l
@@ -48,5 +48,8 @@ void list_clear(list_t* l);
 
 // Libère la mémoire utilisée par la liste et detruit cette dernière
 void list_destroy(list_t** l);
+
+//afficher tout les element de la liste
+void list_print(list_t* l, void (*print_elem)(void*));
 
 #endif

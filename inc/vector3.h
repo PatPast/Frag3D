@@ -24,6 +24,7 @@ vector3_t vector3_normalize(vector3_t v);
 float vector3_distance(vector3_t a, vector3_t b);
 vector3_t vector3_rotate_around(vector3_t v, vector3_t axis, float angle);
 vector3_t vector3_rotate(vector3_t v, vector3_t euler);
+void vector3_print(vector3_t v);
 
 #define VECTOR3_ZERO vector3_init(0, 0, 0)
 #define VECTOR3_UP vector3_init(0, 1, 0)
@@ -52,6 +53,7 @@ matrix4_t matrix4_rotation(vector3_t euler);
 matrix4_t matrix4_look_at(vector3_t eye, vector3_t center, vector3_t up);
 matrix4_t matrix4_perspective(float fov, float aspect_ratio, float near, float far);
 matrix4_t matrix4_ortho(float left, float right, float bottom, float top, float near, float far);
+void matrix4_print(matrix4_t m);
 
 #define MATRIX4_IDENTITY    matrix4_init(1, 0, 0, 0,  0, 1, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1)
 #define MATRIX4_ZERO        matrix4_init(0, 0, 0, 0,  0, 0, 0, 0,  0, 0, 0, 0,  0, 0, 0, 0)

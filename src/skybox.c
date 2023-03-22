@@ -73,10 +73,18 @@ skybox_t* skybox_init(char* skybox_path, matrix4_t projection) {
 }
 
 void skybox_destroy(skybox_t** sb) {
+    if (*sb == NULL) return;
     shader_destroy(&(*sb)->shader);
     glDeleteTextures(1, &(*sb)->cubemap_handle);
     glDeleteBuffers(1, &(*sb)->vao);
     glDeleteBuffers(1, &(*sb)->vbo);
     free(*sb);
     *sb = NULL;
+}
+
+void skybox_print(skybox_t* sb){
+    printf("{shader : "); shader_print(sb->shader);
+    printf("; cubemap_handle : %d; ", sb->cubemap_handle);
+    printf("vao : %d; ", sb->vao);
+    printf("vbo : %d}", sb->vbo);
 }

@@ -5,7 +5,7 @@
 
 
 float fly_speed = 30.0f;
-float sensitivity = 2.0f;
+float sensitivity = 40.0f;
 float max_speed = 12.0f;
 float gravity = 16.0f;
 float ground_accel = 8.0f;
@@ -45,9 +45,13 @@ void world_fly_move(world_t* w, platform_t* platform, float dt){
 }
 
 void world_mouse_look(world_t* w, platform_t* platform, float dt) {
+    
     vector2_t mouse_delta = platform_get_mouse_delta(platform);
     float dx = mouse_delta.x;
     float dy = mouse_delta.y;
+    //SDL_SetWindowGrab(platform->window, 1); est utile
+    
+
 
     // TODO @TASK: Up-down angle limits
     // Rename forward to "look_forward" and introduce "body_forward"
@@ -80,6 +84,7 @@ void apply_friction(vector3_t* player_velocity, float dt) {
         *player_velocity = VECTOR3_ZERO;
         return;
     }
+    
 
     float down_limit = speed > 0.001f ? speed : 0.001f; //max(speed, 0.001f)
     float drop_amount = speed - (down_limit * ground_friction * dt);
@@ -112,7 +117,8 @@ void world_player_tick(world_t* w, platform_t* platform, float dt) {
     }
 
     world_mouse_look(w, platform, dt);
-    //Debug::log("pos %f %f %f", player_position.x, player_position.y, player_position.z);
+    //printf("%f\n", dt);
+    //printf("pos %f %f %f\n", w->player_position.x, w->player_position.y, w->player_position.z); //////////////
 
     if (w->fly_move_enabled) {
         world_fly_move(w, platform, dt);

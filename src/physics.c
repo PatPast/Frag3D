@@ -136,3 +136,4 @@ int raycast(ray_t ray, float max_dist, list_t* static_colliders, ray_t* out){
 
     return 0;
 }
+

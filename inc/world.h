@@ -47,6 +47,7 @@ typedef struct staticCollider_s {
 staticCollider_t* staticCollider_init(objModelData_t* obj_data, vector3_t position, vector3_t rotation);
 void staticCollider_freealloc(staticCollider_t* sc);
 void staticCollider_destroy(staticCollider_t** sc);
+void staticCollider_print(staticCollider_t* sc);
 //TODO finir tout
 
 //Physique
@@ -77,5 +78,6 @@ matrix4_t world_get_view_matrix(world_t* w);
 void world_register_scene(world_t* w, scene_t* scene);
 void world_player_tick(world_t* w, platform_t* platform, float dt);
 void world_register_static_collider(world_t* w, objModelData_t* obj_data, vector3_t position, vector3_t rotation);
+void world_print(world_t* w);
 
 #endif

@@ -1,5 +1,5 @@
 CC=gcc
-FLAGS=-Wall -g
+FLAGS=-Wall -g -D_DEBUG
 
 BIN_DIR=./bin
 DOC_DIR=./doc

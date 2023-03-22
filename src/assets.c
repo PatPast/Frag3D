@@ -341,6 +341,44 @@ void worldspawnEntry_freealloc(worldspawnEntry_t* entry){
     free(entry->obj_name);
 }
 
+void worldspawnEntry_print(worldspawnEntry_t* entry){
+    printf("{obj_name : '%s'; ", entry->obj_name);
+    printf("position : "); vector3_print(entry->position);
+    printf("; rotation : "); vector3_print(entry->rotation);
+    printf("}");
+}
+
 void propEntry_freealloc(propEntry_t* entry){
     free(entry->obj_name);
 }
+
+void propEntry_print(propEntry_t* entry){
+    printf("{obj_name : '%s'; ", entry->obj_name);
+    printf("position : "); vector3_print(entry->position);
+    printf("; rotation : "); vector3_print(entry->rotation);
+    printf("}");
+}
+
+void pointLightInfo_print(pointLightInfo_t* pli){
+    printf("{position : "), vector3_print(pli->position);
+    printf("; color : "), vector3_print(pli->color);
+    printf("; intensity : %f; attenuation : %f}", pli->intensity, pli->attenuation);
+}
+
+void directionalLightInfo_print(directionalLightInfo_t* dli){
+    printf("{position : "), vector3_print(dli->position);
+    printf("; color : "), vector3_print(dli->color);
+    printf("}");
+}
+
+void scene_print(scene_t* scene){
+    printf("--- SCENE :\n{\n");
+    printf("player_start  : "); vector3_print(scene->player_start); putchar('\n');
+    printf("player_lookat  : "); vector3_print(scene->player_lookat); putchar('\n');
+    printf("worldspawn  : \n"); list_print(scene->worldspawn, (void (*)(void *))worldspawnEntry_print);
+    printf("props  : \n"); list_print(scene->props, (void (*)(void *))propEntry_print);
+    printf("point_light_info  : \n"); list_print(scene->point_light_info, (void (*)(void *))pointLightInfo_print);
+    printf("directional_light_info  : "); directionalLightInfo_print(&scene->directional_light_info); putchar('\n');
+    printf("}\n");
+}
+

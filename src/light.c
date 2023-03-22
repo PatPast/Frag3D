@@ -9,7 +9,7 @@ pointLight_t* pointLight_init(pointLightInfo_t point_light_info, int light_index
     pl->base_info = point_light_info;
     pl->current_info = point_light_info;
     pl->index = light_index;
-    pl->shader = shader_init("../src/shader/shadowmap_depth_point.glsl");
+    pl->shader = shader_init("src/shader/shadowmap_depth_point.glsl");
     shader_use(pl->shader);
 
 
@@ -58,6 +58,14 @@ float pointLight_wiggle_intensity(pointLight_t* pl, float dt) {
     return new_current;
 }
 
+void pointLight_print(pointLight_t* pl){
+    printf("{base_info : "); pointLightInfo_print(&pl->base_info);
+    printf("; current_info : "); pointLightInfo_print(&pl->current_info);
+    printf("; index : %d; ", pl->index);
+    printf("shader : "); shader_print(pl->shader);
+    printf("}");
+}
+
 directionalLight_t* directionalLight_init(directionalLightInfo_t info){
     directionalLight_t* dl = malloc(sizeof(directionalLight_t));
 
@@ -66,7 +74,7 @@ directionalLight_t* directionalLight_init(directionalLightInfo_t info){
     const matrix4_t view = matrix4_look_at(info.position, VECTOR3_ZERO, VECTOR3_UP);
     dl->view_proj = matrix4_mult(proj, view);
 
-    dl->shader = shader_init("../src/shader/shadowmap_depth_directional.glsl");
+    dl->shader = shader_init("src/shader/shadowmap_depth_directional.glsl");
     shader_use(dl->shader);
     shader_set_mat4(dl->shader, "u_light_vp", dl->view_proj);
     shader_set_mat4(dl->shader, "u_model", MATRIX4_IDENTITY);
@@ -101,7 +109,15 @@ void directionalLight_freealloc(directionalLight_t* dl){
 }
 
 void directionalLight_destroy(directionalLight_t** dl) {
+    if (*dl == NULL) return;
     directionalLight_freealloc(*dl);
     free(*dl);
     *dl = NULL;
+}
+
+void directionalLight_print(directionalLight_t* dl){
+    printf("{shader : "); shader_print(dl->shader);
+    printf("; fbo : %d; ", dl->fbo);
+    printf("view_proj : "); matrix4_print(dl->view_proj);
+    printf("; depth_tex_handle : %d}", dl->depth_tex_handle);
 }

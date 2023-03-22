@@ -30,6 +30,8 @@ platform_t* platform_init() {
     }
 
     pf->running = 1;
+
+    SDL_ShowCursor(SDL_DISABLE);
     //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // Hide cursor
 
     int mouse_x, mouse_y;
@@ -99,11 +101,9 @@ void platform_read_input(platform_t* pf){
                 case SDLK_d : 
                     key = k_Right; break;
                 case SDLK_SPACE : 
-                    key = k_Up; 
-                    key = k_Jump; break;
-                case SDLK_LCTRL : 
-                    key = k_Down; 
-                    key = k_Crounch; break;
+                    key = k_Up; break;
+                case SDLK_c : 
+                    key = k_Down; break;
                 case SDLK_k : 
                     key = k_ToggleFly; break;
                 default : break;           
@@ -126,16 +126,18 @@ void platform_read_input(platform_t* pf){
         }
     }
 
+
     int mouse_x, mouse_y;
     SDL_GetMouseState(&mouse_x, &mouse_y);
     pf->mouse_dx = mouse_x - pf->prev_mouse_x;
     pf->mouse_dy = mouse_y - pf->prev_mouse_y;
     pf->prev_mouse_x = mouse_x;
     pf->prev_mouse_y = mouse_y;
+    
 }
 
 float platform_get_time() {
-    return (float)SDL_GetTicks();
+    return (float)SDL_GetTicks()/1000;
 }
 
 int platform_should_window_close(platform_t* pf){

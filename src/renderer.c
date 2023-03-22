@@ -62,8 +62,7 @@ renderer_t* renderer_init() {
     // TODO @CLEANUP: This looks stupid. We're doing this stuff on a variable declaration in main()
     // Would look better in an Init function or something.
     glViewport(0, 0, window_width, window_height);
-    glActiveTexture(GL_TEXTURE0);
-    glEnable(GL_TEXTURE_2D);
+    //glActiveTexture(GL_TEXTURE0);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
     glEnable(GL_CULL_FACE);
@@ -72,9 +71,10 @@ renderer_t* renderer_init() {
     glDepthFunc(GL_LESS);
 
     rdr = malloc(sizeof(renderer_t));
+
     rdr->render_units = list_init(sizeof(staticRenderUnit_t));
     rdr->point_lights = list_init(sizeof(pointLight_t));
-
+    rdr->directional_light = NULL;
 
     create_draw_fbo(&rdr->draw_fbo, &rdr->draw_tex_handle, &rdr->draw_rbo);
     create_point_light_cubemap_and_fbo(&rdr->point_light_cubemap_handle, &rdr->point_light_fbo, max_point_light_count);
@@ -136,13 +136,17 @@ void renderer_register_static_obj(renderer_t* rdr, objModelData_t* obj_data, vec
     }
 }
 
+
+
 void renderer_register_point_light(renderer_t* rdr, pointLightInfo_t point_light_info) {
     const int index_to_add = (int)(rdr->point_lights->size);
-    pointLight_t* light = pointLight_init(point_light_info, index_to_add);
-    pointLight_t* pl_at_index_to_add = (pointLight_t*)list_elem(rdr->point_lights, index_to_add); //le pointLight à la position 'index_to_add' de rdr->point_lights
-
+    pointLight_t* light = pointLight_init(point_light_info, index_to_add), *pl_at_index_to_add;
     list_add(rdr->point_lights, light);
     free(light);
+
+    pl_at_index_to_add = (pointLight_t*)list_elem(rdr->point_lights, index_to_add); //le pointLight à la position 'index_to_add' de rdr->point_lights
+
+    
 
     shader_use(rdr->world_shader);
     shader_set_int(rdr->world_shader, "u_point_light_count", index_to_add + 1);
@@ -278,4 +282,18 @@ void renderer_destroy(renderer_t** rdr) {
     free(*rdr);
     *rdr = NULL;
    
+}
+
+void renderer_print(renderer_t* rdr){
+    printf("--- RENDERER :\n{\n");
+    printf("render_units  : \n"); list_print(rdr->render_units, (void (*)(void *))staticRenderUnit_print);
+    printf("world_shader  : "); shader_print(rdr->world_shader); putchar('\n');
+    printf("directional_light  : "); directionalLight_print(rdr->directional_light); putchar('\n');
+    printf("skybox  : "); skybox_print(rdr->skybox); putchar('\n');
+    printf("point_lights  : \n"); list_print(rdr->point_lights, (void (*)(void *))pointLight_print);
+    printf("point_light_cubemap_handle : %d\n", rdr->point_light_cubemap_handle);
+    printf("point_light_fbo : %d\n", rdr->point_light_fbo);
+    printf("draw_fbo : %d\n", rdr->draw_fbo);
+    printf("draw_tex_handle : %d\n", rdr->draw_tex_handle);
+    printf("draw_rbo : %d\n}\n", rdr->draw_rbo);
 }

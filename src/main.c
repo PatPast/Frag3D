@@ -1,4 +1,4 @@
-/*
+
 #include <SDL2/SDL.h>
 #include <glad/glad.h>
 #include <stdlib.h>
@@ -7,16 +7,16 @@
 
 //coucou
 //test 2
-
+/*
 // Vertex Shader source code
-const char* vertexShaderSource = "#version 330 core\n"
+const char* vertexShaderSource = "#version 450 core\n"
 "layout (location = 0) in vec3 aPos;\n"
 "void main()\n"
 "{\n"
 "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
 "}\0";
 //Fragment Shader source code
-const char* fragmentShaderSource = "#version 330 core\n"
+const	 char* fragmentShaderSource = "#version 450 core\n"
 "out vec4 FragColor;\n"
 "void main()\n"
 "{\n"
@@ -161,6 +161,7 @@ int main(int argc, char *argv[])
 }
 */
 
+
 #include <SDL2/SDL.h>
 #include <glad/glad.h>
 #include <render.h>
@@ -168,6 +169,7 @@ int main(int argc, char *argv[])
 #include <platform.h>
 #include <world.h>
 #include <unistd.h>
+#include <config.h>
 
 // TODO @NEXT: Player start pos
 // TODO @NEXT: Shoot footage
@@ -209,29 +211,31 @@ int main(int argc, char *argv[]){
     world = world_init();
 	atexit(world_exit);
 
-	
-
-    scene = scene_read_scene("assets/test_export.txt");
+    scene = scene_read_scene("assets/test_frag3d.txt");
 	atexit(scene_exit);
-
+	
     world_register_scene(world, scene);
+	
     renderer_register_scene(renderer, scene);
-	//scene_destroy(&scene);
 
-    float prev_time = platform_get_time();
+	renderer_print(renderer);
+
+    float prev_time = platform_get_time() ;
+	world->fly_move_enabled = 1;
     while (!platform_should_window_close(platform)) {
         const float now_time = platform_get_time();
         const float dt = now_time - prev_time;
         prev_time = now_time;
+		//if(1000.0/30 > dt) SDL_Delay(1000.0/30-dt);
 
         platform_read_input(platform);
         world_player_tick(world, platform, dt);
         renderer_render(renderer, world_get_view_matrix(world), dt);
 
+		//SDL_WarpMouseInWindow(platform->window, window_width / 2, window_height / 2);
+
         platform_end_frame(platform);
     }
 
-
-
-    return 0;
+    exit(EXIT_SUCCESS);
 }

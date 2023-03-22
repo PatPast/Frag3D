@@ -1,5 +1,6 @@
 #include <vector3.h>
 #include <math.h>
+#include <stdio.h>
 
 
 #define DEG_TO_RAD 0.0174532925199433
@@ -77,6 +78,11 @@ vector3_t vector3_rotate(vector3_t v, vector3_t euler){
     v = vector3_rotate_around(v, VECTOR3_UP, euler.y);
     v = vector3_rotate_around(v, VECTOR3_FORWARD, euler.z);
     return v;
+}
+
+
+void vector3_print(vector3_t v){
+    printf("{%.2f, %.2f, %.2f}", v.x, v.y, v.z);
 }
 
 matrix4_t matrix4_init(
@@ -194,6 +200,12 @@ matrix4_t matrix4_ortho(float left, float right, float bottom, float top, float 
     m.data[3 * 4 + 2] = - (far + near) / (far - near);
 
     return m;
+}
+
+void matrix4_print(matrix4_t m){
+    printf("{%.2f",m.data[0]);
+    for (int i = 1; i < 16; i++) printf(", %.2f", m.data[i]);
+    printf("}");
 }
 
 vector2_t vector2_init(float x, float y){

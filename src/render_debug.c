@@ -16,7 +16,8 @@ void check_gl_framebuffer_complete(char* tag) {
 #ifdef _DEBUG
     const int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
     if (status != GL_FRAMEBUFFER_COMPLETE) {
-        fprintf(stderr, "Framebuffer isn't complete: %d", tag);
+        fprintf(stderr, "Framebuffer isn't complete: %s", tag);
     }
 #endif
 }
+

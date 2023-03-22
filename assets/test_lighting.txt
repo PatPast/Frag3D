@@ -21,3 +21,4 @@ assets/models/test_lighting.obj
 @directional_light
 55.0 55.0 -50.0
 1.0 0.8 0.7
+

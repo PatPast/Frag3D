@@ -141,7 +141,7 @@ uniform_loc_t shader_get_location(shader_t sh, char* property_name) {
 void check_uniform_error(char* property_name) {
     const GLenum error = glGetError();
     if (error != GL_NO_ERROR) {
-        fprintf(stderr, "Error when setting uniform [%d] error code: ", error);
+        fprintf(stderr, "Error when setting uniform [%s] error code: %d\n", property_name, error);
     }
 }
 
@@ -172,4 +172,9 @@ void shader_freealloc(shader_t sh) {
 
 void shader_destroy(shader_t* sh) {
     shader_freealloc(*sh); //traitement de la structure des shader très simple 
+}
+
+void shader_print(shader_t sh){
+    printf("{shader_program_handle : %d}",
+    sh.shader_program_handle);
 }
