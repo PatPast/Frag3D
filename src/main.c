@@ -212,13 +212,12 @@ int main(int argc, char *argv[]){
 	atexit(world_exit);
 
     scene = scene_read_scene("assets/test_frag3d.txt");
-	atexit(scene_exit);
 	
     world_register_scene(world, scene);
 	
     renderer_register_scene(renderer, scene);
 
-	renderer_print(renderer);
+	scene_exit();
 
     float prev_time = platform_get_time() ;
 	world->fly_move_enabled = 1;

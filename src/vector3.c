@@ -90,7 +90,7 @@ matrix4_t matrix4_init(
     float d4, float d5, float d6, float d7,
     float d8, float d9, float d10, float d11,
     float d12, float d13, float d14, float d15){
-        matrix4_t m = {{d0,d1,d3,d4,d5,d6,d7,d8,d2,d10,d11,d12,d13,d14,d15}};
+        matrix4_t m = {{d0,d1,d2,d3,d4,d5,d6,d7,d8,d9,d10,d11,d12,d13,d14,d15}};
         return m;
     }
 

@@ -79,9 +79,8 @@ void platform_read_input(platform_t* pf){
 
     keycode_t key = k_Null;
 
-    for(int i = 0; i < NB_KEYCODE; i++){ // current copié dans prev et réinitialisé
+    for(int i = 0; i < NB_KEYCODE; i++){ // current copié dans prev
         pf->prev_events[i] = pf->current_events[i];
-        pf->current_events[i] = 0;
     }
 
     while (SDL_PollEvent(&pf->event)){   
@@ -131,8 +130,9 @@ void platform_read_input(platform_t* pf){
     SDL_GetMouseState(&mouse_x, &mouse_y);
     pf->mouse_dx = mouse_x - pf->prev_mouse_x;
     pf->mouse_dy = mouse_y - pf->prev_mouse_y;
-    pf->prev_mouse_x = mouse_x;
-    pf->prev_mouse_y = mouse_y;
+    pf->prev_mouse_x = window_width/2;
+    pf->prev_mouse_y = window_height/2;
+    SDL_WarpMouseInWindow(pf->window, window_width/2, window_height/2);
     
 }
 
