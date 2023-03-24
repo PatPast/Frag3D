@@ -5,7 +5,7 @@
 
 
 float fly_speed = 30.0f;
-float sensitivity = 40.0f;
+float sensitivity = 15.0f;
 float max_speed = 12.0f;
 float gravity = 16.0f;
 float ground_accel = 8.0f;
@@ -42,6 +42,10 @@ void world_fly_move(world_t* w, platform_t* platform, float dt){
     if (platform_get_key(platform, k_Down)) {
         w->player_position = vector3_sub(w->player_position, vector3_mult(VECTOR3_UP, displacement));
     }
+    w->player_velocity = VECTOR3_ZERO;
+
+    //vector3_t d = compute_penetrations(w->player_position, w->static_colliders);
+    //w->player_position = vector3_add(w->player_position, d);
 }
 
 void world_mouse_look(world_t* w, platform_t* platform, float dt) {
@@ -61,6 +65,24 @@ void world_mouse_look(world_t* w, platform_t* platform, float dt) {
     vector3_t left = vector3_normalize(vector3_cross(VECTOR3_UP, w->player_forward));
     w->player_forward = vector3_rotate_around(w->player_forward, left, dy * sensitivity * dt);
 
+}
+
+void player_zoom(int active, int zoom, float dt) {
+    
+    float start, end;
+
+    if (active){
+        start = fovdefault;
+        end = fovdefault + zoom;
+        
+    }else{
+        end = fovdefault;
+        start = fovdefault + zoom;
+    }
+    fov = end;
+    //fov = lerp(start, end + zoom, (end - fov) * dt / end );
+
+    
 }
 
 void accelerate(vector3_t* player_velocity, vector3_t wish_dir, float accel_coeff, float dt) {
@@ -112,6 +134,10 @@ void apply_air_control(vector3_t* player_velocity, vector3_t wish_dir, vector3_t
 }
 
 void world_player_tick(world_t* w, platform_t* platform, float dt) {
+
+    player_zoom(platform_get_key(platform, k_Zoom), 30, dt);
+    vector3_print(w->player_position); putchar('\n');
+
     if (platform_get_key_down(platform, k_ToggleFly)) {
         w->fly_move_enabled = !w->fly_move_enabled;
     }

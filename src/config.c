@@ -12,3 +12,5 @@ int window_height = 720;
 int max_point_light_count = 10;
 float player_height = 2.0f;
 float player_radius = 0.5f;
+float fov = 130.0f;
+float fovdefault = 130.0f;

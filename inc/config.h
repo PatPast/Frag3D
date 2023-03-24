@@ -16,6 +16,8 @@ extern int window_height;
 extern int max_point_light_count;
 extern float player_height;
 extern float player_radius;
+extern float fov;
+extern float fovdefault;
 
 
 #endif

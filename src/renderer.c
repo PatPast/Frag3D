@@ -6,7 +6,7 @@
 
 
 #define aspect_ratio ((float)window_width / (float)window_height)
-#define MATRIX4_PERSPECTIVE matrix4_perspective(45.0f, aspect_ratio, near_plane, far_plane)
+#define MATRIX4_PERSPECTIVE matrix4_perspective(fov / 2, aspect_ratio, near_plane, far_plane)
 
 
 void create_draw_fbo(buffer_handle_t* draw_fbo, tex_handle_t* draw_tex_handle, buffer_handle_t* draw_rbo) {
@@ -183,6 +183,7 @@ void renderer_register_directional_light(renderer_t* rdr, directionalLightInfo_t
 
 void renderer_render(renderer_t* rdr, matrix4_t player_view_matrix, float dt) {
     
+
     // TODO @CLEANUP: Probably gonna look different when we go through the other light paramters
     list_foreach(point_light, rdr->point_lights) {
         pointLight_t* pl = (pointLight_t*)point_light;
