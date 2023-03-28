@@ -19,5 +19,17 @@ extern float player_radius;
 extern float fov;
 extern float fovdefault;
 
+extern float fly_speed;
+extern float sensitivity;
+extern float max_speed;
+extern float gravity;
+extern float ground_accel;
+extern float ground_friction;
+extern float jump_force;
+extern float air_accel;
+extern float air_decel;
+extern float air_control_coeff;
+extern float air_control_cpm_coeff;
+
 
 #endif

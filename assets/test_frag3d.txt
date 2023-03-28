@@ -9,6 +9,14 @@ assets/models/exported.obj
 0 0 0
 0 0 0
 
+@directional_light
+-50 50 -50
+0.3 0.3 0.3
+
+@prop
+assets/models/torch.obj
+-10.01 6.36 33.328
+0 0 0
 
 @point_light
 -25 49 -50
@@ -17,10 +25,9 @@ assets/models/exported.obj
 0.9
 
 
-@directional_light
--50 50 -50
-0.3 0.3 0.3
-
-
-
+@point_light
+-11.103 7.85 32.79
+0.695 0.363861 0.08896001
+1
+0.5
 

@@ -4,24 +4,13 @@
 #include <config.h>
 
 
-float fly_speed = 30.0f;
-float sensitivity = 15.0f;
-float max_speed = 12.0f;
-float gravity = 16.0f;
-float ground_accel = 8.0f;
-float ground_friction = 8.0f;
-float jump_force = 6.0f;
-float air_accel = 1.0f;
-float air_decel = 1.0f;
-float air_control_coeff = 8.0f;
-float air_control_cpm_coeff = 8.0f;
-
 matrix4_t world_get_view_matrix(world_t* w){
     return matrix4_look_at(w->player_position, vector3_add(w->player_position, w->player_forward), VECTOR3_UP);
 }
 
 void world_fly_move(world_t* w, platform_t* platform, float dt){
     float displacement = fly_speed * dt;
+    
 
     if (platform_get_key(platform, k_Forward)) {
         w->player_position = vector3_add(w->player_position, vector3_mult(w->player_forward, displacement));
@@ -141,7 +130,7 @@ void world_player_tick(world_t* w, platform_t* platform, float dt) {
     if (platform_get_key_down(platform, k_ToggleFly)) {
         w->fly_move_enabled = !w->fly_move_enabled;
     }
-
+    printf("%f\n", dt);
     world_mouse_look(w, platform, dt);
     //printf("%f\n", dt);
     //printf("pos %f %f %f\n", w->player_position.x, w->player_position.y, w->player_position.z); //////////////
@@ -151,8 +140,8 @@ void world_player_tick(world_t* w, platform_t* platform, float dt) {
         return;
     }
 
-    vector3_t wish_dir;
-    vector3_t move_input;
+    vector3_t wish_dir = VECTOR3_ZERO;
+    vector3_t move_input = VECTOR3_ZERO;
     vector3_t player_forward_horz = w->player_forward;
     player_forward_horz.y = 0;
     if (platform_get_key(platform, k_Forward)) {
@@ -179,6 +168,7 @@ void world_player_tick(world_t* w, platform_t* platform, float dt) {
     vector3_t ground_normal;
     int grounded = is_grounded(w->player_position, horz_vel_dir, w->static_colliders, &ground_normal);
     if (grounded) {
+        printf("grouded \n");
         int is_gonna_jump = platform_get_key(platform, k_Jump);
         if (w->is_prev_grounded && !is_gonna_jump) {
             apply_friction(&w->player_velocity, dt);
@@ -188,6 +178,7 @@ void world_player_tick(world_t* w, platform_t* platform, float dt) {
         w->player_velocity = project_vector_on_plane(w->player_velocity, ground_normal);
 
         if (is_gonna_jump) {
+            printf("jump");
             w->player_velocity = vector3_add(w->player_velocity, vector3_mult(VECTOR3_UP, jump_force));
         }
     } else {
@@ -206,3 +197,65 @@ void world_player_tick(world_t* w, platform_t* platform, float dt) {
     w->is_prev_grounded = grounded;
 
 }
+/*
+void World::player_tick(const Platform& platform, float dt) {
+    if (platform.get_key_down(KeyCode::ToggleFly)) {
+        this->fly_move_enabled = !this->fly_move_enabled;
+    }
+
+    mouse_look(platform, dt);
+    //Debug::log("pos %f %f %f", player_position.x, player_position.y, player_position.z);
+
+    if (this->fly_move_enabled) {
+        fly_move(platform, dt);
+        return;
+    }
+
+    Vector3 wish_dir;
+    Vector3 move_input;
+    Vector3 player_forward_horz = this->player_forward;
+    player_forward_horz.y = 0;
+    if (platform.get_key(KeyCode::Forward)) {
+        wish_dir += player_forward_horz;
+        move_input += Vector3::forward;
+    } else if (platform.get_key(KeyCode::Back)) {
+        wish_dir -= player_forward_horz;
+        move_input -= Vector3::forward;
+    }
+
+    if (platform.get_key(KeyCode::Left)) {
+        wish_dir -= Vector3::cross(player_forward_horz, Vector3::up);
+        move_input += Vector3::left;
+    } else if (platform.get_key(KeyCode::Right)) {
+        wish_dir += Vector3::cross(player_forward_horz, Vector3::up);
+        move_input -= Vector3::left;
+    }
+
+    if (Vector3::length(wish_dir) > 0.01f) {
+        wish_dir = Vector3::normalize(wish_dir);
+    }
+
+    const Vector3 horz_vel_dir = Vector3::normalize(this->player_velocity.horizontal());
+    Vector3 ground_normal;
+    const bool is_grounded = Physics::is_grounded(this->player_position, horz_vel_dir, this->static_colliders, ground_normal);
+    if (is_grounded) {
+        const bool is_gonna_jump = platform.get_key(KeyCode::Jump);
+        if (this->is_prev_grounded && !is_gonna_jump) {
+            apply_friction(this->player_velocity, dt);
+        }
+
+        accelerate(this->player_velocity, wish_dir, ground_accel, dt);
+        this->player_velocity = project_vector_on_plane(this->player_velocity, ground_normal);
+
+        if (is_gonna_jump) {
+            this->player_velocity += Vector3::up * jump_force;
+        }
+    } else {
+        const float air_coeff = Vector3::dot(wish_dir, this->player_velocity) > 0.0f ? air_accel : air_decel;
+        accelerate(this->wish_dir, player_forward_horz
+    const Vector3 displacement = Physics::compute_penetrations(this->player_position, this->static_colliders);
+    this->player_position += displacement;
+    this->is_prev_grounded = is_grounded;
+
+}
+*/

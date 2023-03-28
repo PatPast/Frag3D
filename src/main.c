@@ -222,9 +222,10 @@ int main(int argc, char *argv[]){
     float prev_time = platform_get_time() ;
 	world->fly_move_enabled = 1;
     while (!platform_should_window_close(platform)) {
-        const float now_time = platform_get_time();
+        /*const float now_time = platform_get_time();
         const float dt = now_time - prev_time;
-        prev_time = now_time;
+        prev_time = now_time;*/
+		const float dt = 0.015f;
 		//if(1000.0/30 > dt) SDL_Delay(1000.0/30-dt);
 
         platform_read_input(platform);

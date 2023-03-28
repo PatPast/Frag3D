@@ -55,6 +55,7 @@ float vector3_length(vector3_t v){
 }
 
 vector3_t vector3_normalize(vector3_t v){
+    if (v.x == 0 && v.y == 0 && v.z == 0) return v;
     return vector3_mult(v, 1 / vector3_length(v));
 }
 float vector3_distance(vector3_t a, vector3_t b){

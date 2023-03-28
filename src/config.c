@@ -14,3 +14,16 @@ float player_height = 2.0f;
 float player_radius = 0.5f;
 float fov = 130.0f;
 float fovdefault = 130.0f;
+
+
+float fly_speed = 30.0f;
+float sensitivity = 15.0f;
+float max_speed = 12.0f;
+float gravity = 16.0f;
+float ground_accel = 8.0f;
+float ground_friction = 8.0f;
+float jump_force = 6.0f;
+float air_accel = 1.0f;
+float air_decel = 1.0f;
+float air_control_coeff = 8.0f;
+float air_control_cpm_coeff = 8.0f;

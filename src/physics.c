@@ -19,12 +19,8 @@ int resolve_penetration(playerShape_t* player_shape, triangle_t triangle, vector
     if (is_point_in_triangle(closer_point_projection, triangle)
         || is_point_in_triangle(upper_tip_projection, triangle)
         || is_point_in_triangle(lower_tip_projection, triangle)) {
-        // The line segment (with its tips) can be projected to the triangle
-        // Penetration can be directly calculated via (projection) to (closer_tip)
         vector3_t closer_tip_point;
         if (abs(upper_tip_distance - lower_tip_distance) < 0.00001f) {
-            // Equidistance from the both tips indicate a vertical triangle case
-            // The tip here is the point on the capsule surface
             closer_tip_point = vector3_sub(player_shape->mid_point, vector3_mult(triangle.normal, player_shape->radius));
         } else if (upper_tip_distance < lower_tip_distance) {
             closer_tip_point = player_shape->tip_up;
@@ -41,10 +37,7 @@ int resolve_penetration(playerShape_t* player_shape, triangle_t triangle, vector
     if (dist_to_projection > player_shape->radius) {
         return 0;
     }
-    // @CLEANUP: This penet_amount is not 100% precise for vertical triangles
-    // The exact solution requires getting the (closest_point_on_segment -> closest_point_on_triangle) vector
-    // and multiplying with sin of the angle which this vector makes with vector3.down
-    // Draw it on something, then it'll be clearer to understand
+
     float penet_amount = player_shape->radius - dist_to_plane;
     *penetration = vector3_mult(triangle.normal, penet_amount);
 
@@ -53,7 +46,7 @@ int resolve_penetration(playerShape_t* player_shape, triangle_t triangle, vector
 
 vector3_t compute_penetrations(vector3_t player_pos, list_t* static_colliders){
     playerShape_t player_shape = playerShape_init(player_pos, player_height, player_radius);
-    vector3_t total_displacement;
+    vector3_t total_displacement = VECTOR3_ZERO;
     list_foreach(sc, static_colliders) {
         staticCollider_t* static_collider = (staticCollider_t*)sc;
         list_foreach(tr, static_collider->triangles) {
@@ -75,8 +68,7 @@ int is_grounded(vector3_t player_pos,vector3_t player_move_dir_horz, list_t* sta
     ray_t ground_ray;
 
     vector3_t left = vector3_cross(VECTOR3_UP, player_move_dir_horz);
-    // TODO @PERF: Only three rays at most is enough:
-    // One for the move dir, one for mid_pos, one for ghost jump
+
     list_t* grounded_check_rays = list_init(sizeof(ray_t));
 
     ground_ray = ray_init(mid_pos, VECTOR3_DOWN),
@@ -94,11 +86,12 @@ int is_grounded(vector3_t player_pos,vector3_t player_move_dir_horz, list_t* sta
     ground_ray = ray_init(vector3_sub(mid_pos, vector3_mult(left, player_shape.radius)), VECTOR3_DOWN);
     list_add(grounded_check_rays, &ground_ray);
 
-    float ray_length = player_shape.radius + 0.1f;
+    float ray_length = player_shape.radius + 0.8f;
     ray_t hit = ray_init(VECTOR3_ZERO, VECTOR3_ZERO);
     list_foreach(r, grounded_check_rays) {
         ray_t ray = *(ray_t*)r;
         if (raycast(ray, ray_length, static_colliders, &hit)) {
+            printf("yooo\n");
             *ground_normal = hit.direction;
             return 1;
         }
@@ -128,6 +121,7 @@ int raycast(ray_t ray, float max_dist, list_t* static_colliders, ray_t* out){
             
             vector3_t hit_on_plane = ray_at(ray,t);
             if (is_point_in_triangle(hit_on_plane, triangle)) {
+                printf("yooo\n");
                 *out = ray_init(hit_on_plane, triangle.normal);
                 return 1;
             }

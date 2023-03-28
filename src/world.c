@@ -31,7 +31,7 @@ playerShape_t playerShape_init(vector3_t player_pos, float height, float r){
     ps.segment_up = vector3_add(player_pos, vector3_mult(VECTOR3_UP, height * 0.5f));
     ps.segment_bottom = vector3_add(player_pos, vector3_mult(VECTOR3_DOWN, height * 0.5f));
     ps.tip_up = vector3_add(ps.segment_up, vector3_mult(VECTOR3_UP, ps.radius));
-    ps.tip_bottom = vector3_add(ps.segment_bottom, vector3_mult(VECTOR3_DOWN, ps.radius));;
+    ps.tip_bottom = vector3_add(ps.segment_bottom, vector3_mult(VECTOR3_DOWN, ps.radius));
     return ps;
 }
 
