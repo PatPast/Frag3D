@@ -228,6 +228,8 @@ int main(int argc, char *argv[]){
 		const float dt = 0.015f;
 		//if(1000.0/30 > dt) SDL_Delay(1000.0/30-dt);
 
+		
+
         platform_read_input(platform);
         world_player_tick(world, platform, dt);
         renderer_render(renderer, world_get_view_matrix(world), dt);

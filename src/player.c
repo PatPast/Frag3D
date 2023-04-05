@@ -8,6 +8,7 @@ matrix4_t world_get_view_matrix(world_t* w){
     return matrix4_look_at(w->player_position, vector3_add(w->player_position, w->player_forward), VECTOR3_UP);
 }
 
+
 void world_fly_move(world_t* w, platform_t* platform, float dt){
     float displacement = fly_speed * dt;
     
@@ -168,7 +169,7 @@ void world_player_tick(world_t* w, platform_t* platform, float dt) {
     vector3_t ground_normal;
     int grounded = is_grounded(w->player_position, horz_vel_dir, w->static_colliders, &ground_normal);
     if (grounded) {
-        printf("grouded \n");
+        
         int is_gonna_jump = platform_get_key(platform, k_Jump);
         if (w->is_prev_grounded && !is_gonna_jump) {
             apply_friction(&w->player_velocity, dt);
@@ -178,6 +179,7 @@ void world_player_tick(world_t* w, platform_t* platform, float dt) {
         w->player_velocity = project_vector_on_plane(w->player_velocity, ground_normal);
 
         if (is_gonna_jump) {
+            grounded = !grounded;
             printf("jump");
             w->player_velocity = vector3_add(w->player_velocity, vector3_mult(VECTOR3_UP, jump_force));
         }
@@ -186,6 +188,7 @@ void world_player_tick(world_t* w, platform_t* platform, float dt) {
         accelerate(&w->player_velocity, wish_dir, air_coeff, dt);
         if (move_input.z > 0.0001f) {
         }
+        w->player_velocity = project_vector_on_plane(w->player_velocity, ground_normal);
         apply_air_control(&w->player_velocity, wish_dir, move_input, dt);
         w->player_velocity = vector3_add(w->player_velocity, vector3_mult(VECTOR3_DOWN, gravity * dt));
     }
