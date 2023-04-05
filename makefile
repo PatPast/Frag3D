@@ -11,7 +11,7 @@ SDL_DIR=${HOME}/SDL2
 LIB_DIR=/usr/lib/x86_64-linux-gnu
 INC_DIR=/usr/include/
 
-LIBS=-L${LIB_DIR} -ldl -lSDL2 -lSDL2_image -lGL  -lm 
+LIBS=-L${LIB_DIR} -ldl -lSDL2 -lSDL2_image -lSDL2_ttf -lGL  -lm 
 INCS=-I${INC_DIR} -I./inc
 
 PROG=Frag3D

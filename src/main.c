@@ -170,9 +170,11 @@ int main(int argc, char *argv[])
 #include <world.h>
 #include <unistd.h>
 #include <config.h>
+#include <SDL2/SDL_ttf.h>
 
 // TODO @NEXT: Player start pos
 // TODO @NEXT: Shoot footage
+
 
 static platform_t* platform;
 static renderer_t* renderer;
@@ -192,52 +194,206 @@ void scene_exit(){
 	scene_destroy(&scene);
 }
 
+
+
+
+void jeu(){
+
+
+
+ 
+
+ 
+
+ // TODO @CLEANUP: To make it run from Unity
+
+ 
+
+ //chdir("../");
+
+ //char s[256]; printf("%s\n", getcwd(s, 100));
+
+ //TODO, faire en sorte que le chdir marche
+
+
+
+ platform = platform_init(); 
+
+ atexit(platform_exit);
+
+
+
+ renderer = renderer_init();
+
+ atexit(renderer_exit);
+
+
+
+ world = world_init();
+
+ atexit(world_exit);
+
+
+
+ scene = scene_read_scene("assets/test_frag3d.txt");
+
+ 
+
+ world_register_scene(world, scene);
+
+ 
+
+ renderer_register_scene(renderer, scene);
+
+
+
+ scene_exit();
+
+
+
+ float prev_time = platform_get_time() ;
+
+ world->fly_move_enabled = 1;
+
+ while (!platform_should_window_close(platform)) {
+
+ const float now_time = platform_get_time();
+
+ const float dt = now_time - prev_time;
+
+ prev_time = now_time;
+
+ //if(1000.0/30 > dt) SDL_Delay(1000.0/30-dt); 
+
+
+
+ platform_read_input(platform);
+
+ world_player_tick(world, platform, dt);
+
+ renderer_render(renderer, world_get_view_matrix(world), dt);
+
+
+
+
+ platform_end_frame(platform);
+
+ }
+
+
+
+ exit(EXIT_SUCCESS);
+
+}
+
+
+
+
 int main(int argc, char *argv[]){
-
 	
-	
-    // TODO @CLEANUP: To make it run from Unity
-	
-    //chdir("../");
-	//char s[256]; printf("%s\n", getcwd(s, 100));
-	//TODO, faire en sorte que le chdir marche
+    // Initialisation de la bibliothèque SDL_ttf
+    TTF_Init();
 
-    platform = platform_init(); 
-	atexit(platform_exit);
-
-    renderer = renderer_init();
-	atexit(renderer_exit);
-
-    world = world_init();
-	atexit(world_exit);
-
-    scene = scene_read_scene("assets/test_frag3d.txt");
-	
-    world_register_scene(world, scene);
-	
-    renderer_register_scene(renderer, scene);
-
-	scene_exit();
-
-    float prev_time = platform_get_time() ;
-	world->fly_move_enabled = 1;
-    while (!platform_should_window_close(platform)) {
-        /*const float now_time = platform_get_time();
-        const float dt = now_time - prev_time;
-        prev_time = now_time;*/
-		const float dt = 0.015f;
-		//if(1000.0/30 > dt) SDL_Delay(1000.0/30-dt);
-
-		
-
-        platform_read_input(platform);
-        world_player_tick(world, platform, dt);
-        renderer_render(renderer, world_get_view_matrix(world), dt);
-
-		//SDL_WarpMouseInWindow(platform->window, window_width / 2, window_height / 2);
-
-        platform_end_frame(platform);
+    // Chargement de la police de caractères
+    TTF_Font* font = TTF_OpenFont("assets/menu/contrast.ttf", 32);
+    if (font == NULL) {
+        fprintf(stderr, "Erreur : impossible de charger la police de caractères\n");
+        return 1;
     }
 
-    exit(EXIT_SUCCESS);
+    // Définition des dimensions de la fenêtre
+    const int SCREEN_WIDTH = 640;
+    const int SCREEN_HEIGHT = 480;
+
+    // Initialisation de la SDL
+    SDL_Init(SDL_INIT_VIDEO);
+    SDL_Window* window = SDL_CreateWindow("Menu du jeu", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+    // Création du renderer
+    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, 0);
+
+    SDL_Color textColor = { 255, 255, 255, 255 };
+    SDL_Surface* textSurface = TTF_RenderText_Solid(font, " ", textColor);
+    SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+    SDL_Rect textRect = { (SCREEN_WIDTH - textSurface->w) / 2, (SCREEN_HEIGHT - textSurface->h) / 2 - 100, textSurface->w, textSurface->h };
+
+    SDL_Surface* textSurface1 = TTF_RenderText_Solid(font, "Jouer", textColor);
+    SDL_Texture* textTexture1 = SDL_CreateTextureFromSurface(renderer, textSurface1);
+    SDL_Rect textRect1 = { (SCREEN_WIDTH - textSurface1->w) / 2, (SCREEN_HEIGHT - textSurface1->h) / 2 - 50, textSurface1->w, textSurface1->h };
+
+    SDL_Surface* textSurface2 = TTF_RenderText_Solid(font, "Options", textColor);
+    SDL_Texture* textTexture2 = SDL_CreateTextureFromSurface(renderer, textSurface2);
+    SDL_Rect textRect2 = { (SCREEN_WIDTH - textSurface2->w) / 2, (SCREEN_HEIGHT - textSurface2->h) / 2, textSurface2->w, textSurface2->h };
+
+    SDL_Surface* textSurface3 = TTF_RenderText_Solid(font, "Quitter", textColor);
+    SDL_Texture* textTexture3 = SDL_CreateTextureFromSurface(renderer, textSurface3);
+    SDL_Rect textRect3 = { (SCREEN_WIDTH - textSurface3->w) / 2, (SCREEN_HEIGHT - textSurface3->h) / 2 + 50, textSurface3->w, textSurface3->h };
+
+    // Boucle principale du menu
+    int quit = 0;
+    while (!quit) {
+        // Gestion des événements
+        SDL_Event event;
+        while (SDL_PollEvent(&event)) {
+            switch (event.type) {
+                case SDL_QUIT:
+                    quit = 1;
+                    break;
+                case SDL_KEYDOWN:
+                    if (event.key.keysym.sym == SDLK_ESCAPE) {
+                        quit = 1;
+                    }
+                    break;
+                case SDL_MOUSEBUTTONDOWN:
+                    if (event.button.button == SDL_BUTTON_LEFT) {
+                        int x = event.button.x;
+                        int y = event.button.y;
+                        if (x >= textRect1.x && x <= textRect1.x + textRect1.w && y >= textRect1.y && y <= textRect1.y + textRect1.h) {
+							jeu();
+                            // Action du bouton Jouer
+                        } else if (x >= textRect2.x && x <= textRect2.x + textRect2.w && y >= textRect2.y && y <= textRect2.y + textRect2.h) {
+                            // Action du bouton Options
+                        } else if (x >= textRect3.x && x <= textRect3.x + textRect3.w && y >= textRect3.y && y <= textRect3.y + textRect3.h) {
+                            quit = 1;
+                        }
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        // Effacement de l'écran
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        SDL_RenderClear(renderer);
+
+        // Affichage des textures
+        SDL_RenderCopy(renderer, textTexture, NULL, NULL);
+        SDL_RenderCopy(renderer, textTexture1, NULL, &textRect1);
+        SDL_RenderCopy(renderer, textTexture2, NULL, &textRect2);
+        SDL_RenderCopy(renderer, textTexture3, NULL, &textRect3);
+
+        // Mise à jour de l'écran
+        SDL_RenderPresent(renderer);
+    }
+
+    // Libération de la mémoire
+    SDL_DestroyTexture(textTexture);
+    SDL_FreeSurface(textSurface);
+    SDL_DestroyTexture(textTexture1);
+    SDL_FreeSurface(textSurface1);
+    SDL_DestroyTexture(textTexture2);
+    SDL_FreeSurface(textSurface2);
+    SDL_DestroyTexture(textTexture3);
+    SDL_FreeSurface(textSurface3);
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+
+    // Fermeture de la bibliothèque SDL_ttf
+    TTF_Quit();
+
+    // Fermeture de la SDL
+    SDL_Quit();
+
+    return 0;
 }
+
