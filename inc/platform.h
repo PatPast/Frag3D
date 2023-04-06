@@ -36,6 +36,7 @@ typedef struct platform_s {
     int prev_mouse_y;
     int mouse_dx;
     int mouse_dy;
+    int mouse_state;
 
 }platform_t;
 
