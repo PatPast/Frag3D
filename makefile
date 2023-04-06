@@ -17,7 +17,6 @@ INCS=-I${INC_DIR} -I./inc
 PROG=Frag3D
 
 all: ${BIN_DIR}/${PROG} 
-#all : ${BIN_DIR}/test_list
 
 ${BIN_DIR}/${PROG}: ${SRC_DIR}/*.c 
 	${CC} -o $@ $^ ${LIBS} ${INCS} ${FLAGS}
