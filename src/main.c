@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <config.h>
 #include <SDL2/SDL_ttf.h>
+#include <SDL2/SDL_image.h>
 #include <SDL2/SDL_mixer.h>
 
 
@@ -72,16 +73,6 @@ void jeu(){
 
 int main(int argc, char *argv[]){
 	
-    // Initialisation de la bibliothèque SDL_ttf
-    TTF_Init();
-
-    // Chargement de la police de caractères
-    TTF_Font* font = TTF_OpenFont("assets/menu/contrast.ttf", 32);
-	TTF_Font* font2 = TTF_OpenFont("assets/menu/contrast2.ttf", 32);
-    if (font == NULL || font2 == NULL) {
-        fprintf(stderr, "Erreur : impossible de charger la police de caractères\n");
-        return 1;
-    }
 
 	/*
 	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
@@ -105,25 +96,41 @@ int main(int argc, char *argv[]){
     // Création du renderer du menu
     SDL_Renderer* menuRenderer = SDL_CreateRenderer(window, -1, 0);
 
+    // Initialisation de la bibliothèque SDL_ttf
+    TTF_Init();
+    
+
+    // Chargement de la police de caractères
+    TTF_Font* font = TTF_OpenFont("assets/menu/contrast.ttf", 32);
+	TTF_Font* font2 = TTF_OpenFont("assets/menu/contrast2.ttf", 32);
+
+    // Chargement de l'image'
+    SDL_Surface* backgroundSurface = IMG_Load("assets/menu/fond.png");
+    SDL_Texture* backgroundTexture = SDL_CreateTextureFromSurface(menuRenderer, backgroundSurface);
+    SDL_Rect backgroundRect = { 0, 0, window_width, window_height };
+    // Afficher l'arrière-plan
+    SDL_RenderCopy(menuRenderer, backgroundTexture, NULL, &backgroundRect);
+    if (font == NULL || font2 == NULL) {
+        fprintf(stderr, "Erreur : impossible de charger la police de caractères\n");
+        return 1;
+    }
+
     SDL_Color textColor = { 255, 255, 255, 255 };
 	SDL_Color textColor2 = {  255, 195, 0, 0 };
 	SDL_Color textColor3 = {  255, 50, 50, 0 };
-    SDL_Surface* textSurface = TTF_RenderText_Solid(font2, "Frag 3D", textColor2);
+    SDL_Surface* textSurface = TTF_RenderText_Solid(font2, " ", textColor2);
     SDL_Texture* textTexture = SDL_CreateTextureFromSurface(menuRenderer, textSurface);
     SDL_Rect textRect = { (window_width - textSurface->w) / 2, (window_height - textSurface->h) / 2 - 100, textSurface->w, textSurface->h };
 
     SDL_Surface* textSurface1 = TTF_RenderText_Solid(font, "Jouer", textColor);
     SDL_Texture* textTexture1 = SDL_CreateTextureFromSurface(menuRenderer, textSurface1);
-    SDL_Rect textRect1 = { (window_width - textSurface1->w) / 2, (window_height - textSurface1->h) / 2 - 50, textSurface1->w, textSurface1->h };
-
-    SDL_Surface* textSurface2 = TTF_RenderText_Solid(font, "Options", textColor);
-    SDL_Texture* textTexture2 = SDL_CreateTextureFromSurface(menuRenderer, textSurface2);
-    SDL_Rect textRect2 = { (window_width - textSurface2->w) / 2, (window_height - textSurface2->h) / 2, textSurface2->w, textSurface2->h };
+    SDL_Rect textRect1 = { (window_width - textSurface1->w) / 2, (window_height - textSurface1->h) / 2 + 50, textSurface1->w, textSurface1->h };
 
     SDL_Surface* textSurface3 = TTF_RenderText_Solid(font, "Quitter", textColor3);
     SDL_Texture* textTexture3 = SDL_CreateTextureFromSurface(menuRenderer, textSurface3);
-    SDL_Rect textRect3 = { (window_width - textSurface3->w) / 2, (window_height - textSurface3->h) / 2 + 50, textSurface3->w, textSurface3->h };
+    SDL_Rect textRect3 = { (window_width - textSurface3->w) / 2, (window_height - textSurface3->h) / 2 + 100 , textSurface3->w, textSurface3->h };
 
+    
     // Boucle principale du menu
     int quit = 0;
     while (!quit) {
@@ -144,11 +151,8 @@ int main(int argc, char *argv[]){
                         int x = event.button.x;
                         int y = event.button.y;
                         if (x >= textRect1.x && x <= textRect1.x + textRect1.w && y >= textRect1.y && y <= textRect1.y + textRect1.h) {
-							jeu();
+                            jeu();
                             // Action du bouton Jouer
-                        } else if (x >= textRect2.x && x <= textRect2.x + textRect2.w && y >= textRect2.y && y <= textRect2.y + textRect2.h) {
-                            //optionReglage(font, menuRenderer);
-							// Action du bouton Options
                         } else if (x >= textRect3.x && x <= textRect3.x + textRect3.w && y >= textRect3.y && y <= textRect3.y + textRect3.h) {
                             quit = 1;
                         }
@@ -159,30 +163,30 @@ int main(int argc, char *argv[]){
             }
         }
 
-        // Effacement de l'écran
-        SDL_SetRenderDrawColor(menuRenderer, 0, 0, 0, 255);
-        SDL_RenderClear(menuRenderer);
+        // Afficher l'arrière-plan
+        SDL_RenderCopy(menuRenderer, backgroundTexture, NULL, &backgroundRect);
 
         // Affichage des textures
         SDL_RenderCopy(menuRenderer, textTexture, NULL, NULL);
         SDL_RenderCopy(menuRenderer, textTexture1, NULL, &textRect1);
-        SDL_RenderCopy(menuRenderer, textTexture2, NULL, &textRect2);
         SDL_RenderCopy(menuRenderer, textTexture3, NULL, &textRect3);
 
         // Mise à jour de l'écran
         SDL_RenderPresent(menuRenderer);
     }
 
+
     // Libération de la mémoire
     SDL_DestroyTexture(textTexture);
     SDL_FreeSurface(textSurface);
     SDL_DestroyTexture(textTexture1);
     SDL_FreeSurface(textSurface1);
-    SDL_DestroyTexture(textTexture2);
-    SDL_FreeSurface(textSurface2);
     SDL_DestroyTexture(textTexture3);
     SDL_FreeSurface(textSurface3);
     SDL_DestroyRenderer(menuRenderer);
+    SDL_DestroyTexture(backgroundTexture);
+    SDL_FreeSurface(backgroundSurface);
+
 
     // Fermeture de la bibliothèque SDL_ttf
     TTF_Quit();
